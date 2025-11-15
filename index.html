@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Rincón del Che Carlitos - OBS Studio</title>
+
+  <!-- Tailwind CSS v4 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts - Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'radio-red': '#FF3B3B',
+            'radio-gold': '#FFD700',
+            'radio-charcoal': '#2C2C2C',
+            'radio-silver': '#C0C0C0',
+            'radio-wave': '#00D9FF',
+            'radio-amber': '#FFBF00',
+            'radio-slate': '#4A4A4A',
+            'radio-cream': '#F5F5DC',
+          },
+          fontFamily: {
+            'poppins': ['Poppins', 'sans-serif'],
+          },
+          animation: {
+            'glow': 'glow 2s ease-in-out infinite',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            glow: {
+              '0%, 100%': { filter: 'drop-shadow(0 0 5px currentColor)' },
+              '50%': { filter: 'drop-shadow(0 0 20px currentColor)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-radio-charcoal text-radio-cream min-h-screen flex items-center justify-center p-8">
+
+  <div class="max-w-4xl w-full text-center">
+
+    <!-- Logo Section -->
+    <div class="mb-12">
+      <div class="flex items-center justify-center gap-6 mb-6">
+        <!-- Ondas izquierda -->
+        <i class="fa-solid fa-water text-radio-wave text-4xl transform -scale-x-100 animate-pulse-slow"></i>
+
+        <!-- Micrófono -->
+        <i class="fa-solid fa-microphone text-radio-red text-7xl animate-glow"></i>
+
+        <!-- Ondas derecha -->
+        <i class="fa-solid fa-water text-radio-wave text-4xl animate-pulse-slow"></i>
+      </div>
+
+      <!-- Texto del logo -->
+      <div class="text-center">
+        <div class="text-2xl font-light text-radio-cream tracking-widest">EL RINCÓN DEL</div>
+        <div class="text-5xl font-bold text-radio-gold mt-2">Che Carlitos</div>
+      </div>
+    </div>
+
+    <!-- Badge ON AIR -->
+    <div class="inline-flex items-center gap-3 bg-radio-red px-6 py-3 rounded-full mb-8 animate-pulse">
+      <div class="w-3 h-3 bg-white rounded-full"></div>
+      <span class="text-white font-bold tracking-wider text-lg">OBS STUDIO READY</span>
+    </div>
+
+    <!-- Descripción -->
+    <p class="text-radio-silver text-lg mb-12 max-w-2xl mx-auto leading-relaxed">
+      Sistema de overlays para streaming vertical <span class="text-radio-wave font-semibold">(9:16)</span>
+      optimizado para TikTok, Instagram Reels y YouTube Shorts
+    </p>
+
+    <!-- Especificaciones -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div class="bg-radio-slate p-6 rounded-lg border border-radio-silver/20">
+        <i class="fa-solid fa-tv text-radio-wave text-3xl mb-3"></i>
+        <h3 class="text-radio-gold font-semibold text-xl mb-2">Resolución</h3>
+        <p class="text-radio-cream">1080 x 1920</p>
+        <p class="text-radio-silver text-sm">Full HD Vertical</p>
+      </div>
+
+      <div class="bg-radio-slate p-6 rounded-lg border border-radio-silver/20">
+        <i class="fa-solid fa-palette text-radio-wave text-3xl mb-3"></i>
+        <h3 class="text-radio-gold font-semibold text-xl mb-2">Paleta</h3>
+        <p class="text-radio-cream">Temática Radio</p>
+        <p class="text-radio-silver text-sm">8 colores custom</p>
+      </div>
+
+      <div class="bg-radio-slate p-6 rounded-lg border border-radio-silver/20">
+        <i class="fa-solid fa-code text-radio-wave text-3xl mb-3"></i>
+        <h3 class="text-radio-gold font-semibold text-xl mb-2">Stack</h3>
+        <p class="text-radio-cream">Vanilla JS</p>
+        <p class="text-radio-silver text-sm">Zero dependencies</p>
+      </div>
+    </div>
+
+    <!-- Paleta de colores -->
+    <div class="mb-12">
+      <h3 class="text-2xl font-semibold text-radio-gold mb-6">Paleta de Colores</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="text-center">
+          <div class="w-full h-20 bg-radio-red rounded-lg mb-2 border-2 border-radio-cream/20"></div>
+          <p class="text-sm font-medium">Radio Red</p>
+          <p class="text-xs text-radio-silver">#FF3B3B</p>
+        </div>
+        <div class="text-center">
+          <div class="w-full h-20 bg-radio-gold rounded-lg mb-2 border-2 border-radio-cream/20"></div>
+          <p class="text-sm font-medium">Radio Gold</p>
+          <p class="text-xs text-radio-silver">#FFD700</p>
+        </div>
+        <div class="text-center">
+          <div class="w-full h-20 bg-radio-wave rounded-lg mb-2 border-2 border-radio-cream/20"></div>
+          <p class="text-sm font-medium">Radio Wave</p>
+          <p class="text-xs text-radio-silver">#00D9FF</p>
+        </div>
+        <div class="text-center">
+          <div class="w-full h-20 bg-radio-amber rounded-lg mb-2 border-2 border-radio-cream/20"></div>
+          <p class="text-sm font-medium">Radio Amber</p>
+          <p class="text-xs text-radio-silver">#FFBF00</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado del proyecto -->
+    <div class="bg-radio-slate/50 border border-radio-wave/30 rounded-lg p-6 mb-8">
+      <h3 class="text-xl font-semibold text-radio-wave mb-4">
+        <i class="fa-solid fa-circle-info mr-2"></i>
+        Estado del Proyecto
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+        <div>
+          <p class="text-radio-silver mb-2"><i class="fa-solid fa-check text-radio-gold mr-2"></i> Estructura base creada</p>
+          <p class="text-radio-silver mb-2"><i class="fa-solid fa-check text-radio-gold mr-2"></i> Servidor HTTP configurado</p>
+          <p class="text-radio-silver mb-2"><i class="fa-solid fa-check text-radio-gold mr-2"></i> Paleta de colores definida</p>
+        </div>
+        <div>
+          <p class="text-radio-silver mb-2"><i class="fa-solid fa-circle text-radio-red mr-2 text-xs"></i> Widgets pendientes</p>
+          <p class="text-radio-silver mb-2"><i class="fa-solid fa-circle text-radio-red mr-2 text-xs"></i> Controllers pendientes</p>
+          <p class="text-radio-silver mb-2"><i class="fa-solid fa-circle text-radio-red mr-2 text-xs"></i> Overlays pendientes</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Links -->
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="https://github.com/carlosromanxyz/checarlitos-obs-studio"
+         target="_blank"
+         class="inline-flex items-center gap-2 bg-radio-slate hover:bg-radio-wave/20 text-radio-cream px-6 py-3 rounded-lg border border-radio-wave/30 transition-all hover:border-radio-wave">
+        <i class="fa-brands fa-github text-xl"></i>
+        <span class="font-semibold">GitHub Repository</span>
+      </a>
+
+      <a href="/docs"
+         class="inline-flex items-center gap-2 bg-radio-slate hover:bg-radio-gold/20 text-radio-cream px-6 py-3 rounded-lg border border-radio-gold/30 transition-all hover:border-radio-gold">
+        <i class="fa-solid fa-book text-xl"></i>
+        <span class="font-semibold">Documentación</span>
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-12 pt-6 border-t border-radio-silver/20">
+      <p class="text-radio-silver text-sm">
+        Hecho con <i class="fa-solid fa-heart text-radio-red"></i> por
+        <span class="text-radio-gold font-semibold">Carlos Roman</span>
+      </p>
+      <p class="text-radio-silver/60 text-xs mt-2">
+        Tipografía: Poppins | Formato: 1080x1920 (9:16) | Zero dependencies
+      </p>
+    </div>
+
+  </div>
+
+</body>
+</html>
