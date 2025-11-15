@@ -9,11 +9,9 @@ const YoutubeCarouselWidget = {
   // Configuración por defecto
   defaultConfig: {
     isVisible: false,
-    location: 'YouTube',
+    intervalSeconds: 30,
     videos: [],
-    currentIndex: 0,
-    duration: 30,
-    autoplay: true
+    currentIndex: 0
   },
 
   /**
@@ -77,25 +75,37 @@ const YoutubeCarouselWidget = {
   },
 
   /**
-   * Actualizar ubicación
+   * Actualizar intervalo de rotación (segundos)
    */
-  setLocation(location) {
-    return this.update({ location });
+  setInterval(seconds) {
+    return this.update({ intervalSeconds: parseInt(seconds) || 30 });
   },
 
   /**
-   * Actualizar lista de videos
+   * Validar ID de video de YouTube (11 caracteres alfanuméricos)
    */
-  setVideos(videos) {
-    return this.update({ videos, currentIndex: 0 });
+  isValidVideoId(videoId) {
+    return /^[a-zA-Z0-9_-]{11}$/.test(videoId);
   },
 
   /**
    * Agregar video a la lista
    */
-  addVideo(videoUrl) {
+  addVideo(videoId, location = '') {
     const current = this.load();
-    current.videos.push(videoUrl);
+
+    // Validar ID
+    if (!this.isValidVideoId(videoId)) {
+      return false;
+    }
+
+    // Agregar video
+    current.videos.push({
+      videoId: videoId.trim(),
+      location: location.trim().toUpperCase(),
+      isEnabled: true
+    });
+
     return this.save(current);
   },
 
@@ -116,42 +126,78 @@ const YoutubeCarouselWidget = {
   },
 
   /**
-   * Actualizar duración por video
+   * Toggle habilitar/deshabilitar video
    */
-  setDuration(duration) {
-    return this.update({ duration: parseInt(duration) || 30 });
-  },
-
-  /**
-   * Toggle autoplay
-   */
-  toggleAutoplay() {
+  toggleVideo(index, isEnabled) {
     const current = this.load();
-    current.autoplay = !current.autoplay;
-    return this.save(current);
-  },
-
-  /**
-   * Ir al siguiente video
-   */
-  nextVideo() {
-    const current = this.load();
-    if (current.videos.length > 0) {
-      current.currentIndex = (current.currentIndex + 1) % current.videos.length;
+    if (index >= 0 && index < current.videos.length) {
+      current.videos[index].isEnabled = isEnabled;
       return this.save(current);
     }
     return false;
   },
 
   /**
-   * Ir al video anterior
+   * Actualizar ubicación de un video
+   */
+  updateVideoLocation(index, location) {
+    const current = this.load();
+    if (index >= 0 && index < current.videos.length) {
+      current.videos[index].location = location.trim().toUpperCase();
+      return this.save(current);
+    }
+    return false;
+  },
+
+  /**
+   * Ir al siguiente video (solo habilitados)
+   */
+  nextVideo() {
+    const current = this.load();
+    const enabledVideos = current.videos.filter(v => v.isEnabled !== false);
+
+    if (enabledVideos.length === 0) return false;
+
+    // Buscar el siguiente video habilitado
+    let nextIndex = (current.currentIndex + 1) % current.videos.length;
+    let attempts = 0;
+
+    while (current.videos[nextIndex].isEnabled === false && attempts < current.videos.length) {
+      nextIndex = (nextIndex + 1) % current.videos.length;
+      attempts++;
+    }
+
+    if (current.videos[nextIndex].isEnabled !== false) {
+      current.currentIndex = nextIndex;
+      return this.save(current);
+    }
+
+    return false;
+  },
+
+  /**
+   * Ir al video anterior (solo habilitados)
    */
   previousVideo() {
     const current = this.load();
-    if (current.videos.length > 0) {
-      current.currentIndex = (current.currentIndex - 1 + current.videos.length) % current.videos.length;
+    const enabledVideos = current.videos.filter(v => v.isEnabled !== false);
+
+    if (enabledVideos.length === 0) return false;
+
+    // Buscar el video anterior habilitado
+    let prevIndex = (current.currentIndex - 1 + current.videos.length) % current.videos.length;
+    let attempts = 0;
+
+    while (current.videos[prevIndex].isEnabled === false && attempts < current.videos.length) {
+      prevIndex = (prevIndex - 1 + current.videos.length) % current.videos.length;
+      attempts++;
+    }
+
+    if (current.videos[prevIndex].isEnabled !== false) {
+      current.currentIndex = prevIndex;
       return this.save(current);
     }
+
     return false;
   },
 
@@ -172,33 +218,6 @@ const YoutubeCarouselWidget = {
    */
   reset() {
     return this.save({ ...this.defaultConfig });
-  },
-
-  /**
-   * Validar URL de YouTube
-   */
-  isValidYoutubeUrl(url) {
-    const patterns = [
-      /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
-      /^(https?:\/\/)?(www\.)?youtube\.com\/embed\/([^&\n?#]+)/
-    ];
-    return patterns.some(pattern => pattern.test(url));
-  },
-
-  /**
-   * Extraer ID de video de YouTube
-   */
-  extractVideoId(url) {
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
-      /youtube\.com\/embed\/([^&\n?#]+)/
-    ];
-
-    for (const pattern of patterns) {
-      const match = url.match(pattern);
-      if (match) return match[1];
-    }
-    return null;
   }
 };
 

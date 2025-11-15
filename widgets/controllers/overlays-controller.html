@@ -56,27 +56,16 @@
       <div id="youtube-carousel-content" class="bg-zinc-800/50 border-t border-zinc-700 hidden">
         <div class="p-3 space-y-3">
 
-          <!-- Ubicación -->
-          <div>
-            <label class="block text-xs text-zinc-400 mb-1">Ubicación (badge)</label>
-            <input
-              type="text"
-              id="youtube-location-input"
-              placeholder="Ej: Santiago, Chile"
-              class="w-full bg-zinc-900 border border-zinc-600 text-white px-3 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
-              onchange="youtubeUpdateLocation(this.value)"
-            >
-          </div>
-
           <!-- Agregar video -->
           <div>
-            <label class="block text-xs text-zinc-400 mb-1">Agregar URL de YouTube</label>
-            <div class="flex gap-2">
+            <label class="block text-xs text-zinc-400 mb-1">Agregar video</label>
+            <div class="flex gap-2 mb-2">
               <input
                 type="text"
-                id="youtube-video-url-input"
-                placeholder="https://youtube.com/watch?v=..."
-                class="flex-1 bg-zinc-900 border border-zinc-600 text-white px-3 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
+                id="youtube-video-id-input"
+                placeholder="ID del video (ej: dQw4w9WgXcQ)"
+                maxlength="11"
+                class="flex-1 bg-zinc-900 border border-zinc-600 text-white px-3 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave font-mono"
               >
               <button
                 onclick="youtubeAddVideo()"
@@ -85,6 +74,13 @@
                 Agregar
               </button>
             </div>
+            <input
+              type="text"
+              id="youtube-location-input"
+              placeholder="Ubicación (opcional, ej: SANTIAGO)"
+              maxlength="20"
+              class="w-full bg-zinc-900 border border-zinc-600 text-white px-3 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
+            >
           </div>
 
           <!-- Lista de videos -->
@@ -95,27 +91,18 @@
             </div>
           </div>
 
-          <!-- Duración -->
+          <!-- Intervalo de rotación -->
           <div>
-            <label class="block text-xs text-zinc-400 mb-1">Duración por video (segundos)</label>
+            <label class="block text-xs text-zinc-400 mb-1">Intervalo de rotación (segundos)</label>
             <input
               type="number"
-              id="youtube-duration-input"
+              id="youtube-interval-input"
               min="5"
               max="300"
               value="30"
               class="w-full bg-zinc-900 border border-zinc-600 text-white px-3 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
-              onchange="youtubeUpdateDuration(this.value)"
+              onchange="youtubeUpdateInterval(this.value)"
             >
-          </div>
-
-          <!-- Autoplay -->
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-zinc-300">Autoplay</span>
-            <label class="relative cursor-pointer">
-              <input type="checkbox" id="youtube-autoplay-toggle" class="sr-only peer" onchange="youtubeToggleAutoplay(this.checked)">
-              <div class="w-11 h-6 bg-zinc-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-radio-wave rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-radio-wave"></div>
-            </label>
           </div>
 
           <!-- Navegación -->
@@ -168,14 +155,8 @@
       // Toggle principal
       document.getElementById('youtube-visible-toggle').checked = youtubeConfig.isVisible;
 
-      // Location
-      document.getElementById('youtube-location-input').value = youtubeConfig.location || '';
-
-      // Duration
-      document.getElementById('youtube-duration-input').value = youtubeConfig.duration || 30;
-
-      // Autoplay
-      document.getElementById('youtube-autoplay-toggle').checked = youtubeConfig.autoplay;
+      // Interval
+      document.getElementById('youtube-interval-input').value = youtubeConfig.intervalSeconds || 30;
 
       // Video count
       document.getElementById('youtube-video-count').textContent = youtubeConfig.videos?.length || 0;
@@ -192,23 +173,27 @@
         return;
       }
 
-      videoList.innerHTML = youtubeConfig.videos.map((url, index) => {
+      videoList.innerHTML = youtubeConfig.videos.map((video, index) => {
         const isActive = index === youtubeConfig.currentIndex;
         return `
           <div class="flex items-center gap-2 bg-zinc-900 border ${isActive ? 'border-radio-wave' : 'border-zinc-700'} rounded p-2">
-            <span class="flex-1 text-xs text-zinc-400 truncate">${index + 1}. ${url}</span>
+            <input
+              type="checkbox"
+              ${video.isEnabled !== false ? 'checked' : ''}
+              onchange="youtubeToggleVideo(${index}, this.checked)"
+              class="w-4 h-4 text-radio-wave bg-zinc-600 border-zinc-500 rounded focus:ring-radio-wave focus:ring-2"
+            >
+            <div class="flex-1 min-w-0">
+              <div class="text-sm text-white truncate">${video.location || 'Sin ubicación'}</div>
+              <div class="text-xs text-zinc-400 truncate font-mono">${video.videoId}</div>
+            </div>
             ${isActive ? '<i class="fa-solid fa-play text-radio-wave text-xs"></i>' : ''}
             <button
-              onclick="youtubeGoToVideo(${index})"
-              class="bg-zinc-700 hover:bg-zinc-600 text-white px-2 py-1 rounded text-xs"
-            >
-              <i class="fa-solid fa-arrow-right"></i>
-            </button>
-            <button
               onclick="youtubeRemoveVideo(${index})"
-              class="bg-red-900/50 hover:bg-red-900 text-red-400 px-2 py-1 rounded text-xs"
+              class="text-red-400 hover:text-red-300 px-2 py-1"
+              title="Eliminar video"
             >
-              <i class="fa-solid fa-trash"></i>
+              <i class="fa-solid fa-trash text-xs"></i>
             </button>
           </div>
         `;
@@ -220,27 +205,31 @@
       youtubeLoadConfig();
     }
 
-    function youtubeUpdateLocation(value) {
-      YoutubeCarouselWidget.setLocation(value);
+    function youtubeAddVideo() {
+      const videoIdInput = document.getElementById('youtube-video-id-input');
+      const locationInput = document.getElementById('youtube-location-input');
+
+      const videoId = videoIdInput.value.trim();
+      const location = locationInput.value.trim();
+
+      if (!videoId) {
+        alert('Por favor ingresa un ID de video');
+        return;
+      }
+
+      if (!YoutubeCarouselWidget.isValidVideoId(videoId)) {
+        alert('El ID del video no parece válido. Debe tener 11 caracteres.\nEjemplo: dQw4w9WgXcQ de https://youtube.com/watch?v=dQw4w9WgXcQ');
+        return;
+      }
+
+      YoutubeCarouselWidget.addVideo(videoId, location);
+      videoIdInput.value = '';
+      locationInput.value = '';
       youtubeLoadConfig();
     }
 
-    function youtubeAddVideo() {
-      const input = document.getElementById('youtube-video-url-input');
-      const url = input.value.trim();
-
-      if (!url) {
-        alert('Por favor ingresa una URL de YouTube');
-        return;
-      }
-
-      if (!YoutubeCarouselWidget.isValidYoutubeUrl(url)) {
-        alert('URL de YouTube inválida');
-        return;
-      }
-
-      YoutubeCarouselWidget.addVideo(url);
-      input.value = '';
+    function youtubeToggleVideo(index, checked) {
+      YoutubeCarouselWidget.toggleVideo(index, checked);
       youtubeLoadConfig();
     }
 
@@ -251,13 +240,8 @@
       }
     }
 
-    function youtubeUpdateDuration(value) {
-      YoutubeCarouselWidget.setDuration(parseInt(value));
-      youtubeLoadConfig();
-    }
-
-    function youtubeToggleAutoplay(checked) {
-      YoutubeCarouselWidget.update({ autoplay: checked });
+    function youtubeUpdateInterval(value) {
+      YoutubeCarouselWidget.setInterval(parseInt(value));
       youtubeLoadConfig();
     }
 

@@ -156,17 +156,15 @@
     // Configuración por defecto
     const DEFAULT_CONFIG = {
       isVisible: false,
-      location: 'YouTube',
+      intervalSeconds: 30,
       videos: [],
-      currentIndex: 0,
-      duration: 30, // segundos por video
-      autoplay: true
+      currentIndex: 0
     };
 
     let config = { ...DEFAULT_CONFIG };
     let players = [];
     let currentPlayer = null;
-    let autoplayTimer = null;
+    let rotationTimer = null;
 
     // Cargar configuración desde localStorage
     function loadConfig() {
@@ -184,34 +182,14 @@
     // Aplicar configuración
     function applyConfig() {
       const badge = document.getElementById('location-badge');
-      const locationText = document.getElementById('location-text');
 
-      // Actualizar texto de ubicación
-      locationText.textContent = config.location || 'YouTube';
-
-      // Mostrar/ocultar badge
-      if (config.isVisible) {
+      // Mostrar/ocultar todo el overlay
+      if (config.isVisible && config.videos && config.videos.length > 0) {
         badge.classList.add('visible');
+        updateCarousel();
       } else {
         badge.classList.remove('visible');
       }
-
-      // Actualizar carrusel de videos
-      updateCarousel();
-    }
-
-    // Extraer video ID de URL de YouTube
-    function extractVideoId(url) {
-      const patterns = [
-        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
-        /youtube\.com\/embed\/([^&\n?#]+)/
-      ];
-
-      for (const pattern of patterns) {
-        const match = url.match(pattern);
-        if (match) return match[1];
-      }
-      return null;
     }
 
     // Actualizar carrusel de videos
@@ -224,10 +202,7 @@
       }
 
       // Crear wrappers para cada video
-      config.videos.forEach((videoUrl, index) => {
-        const videoId = extractVideoId(videoUrl);
-        if (!videoId) return;
-
+      config.videos.forEach((video, index) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'video-wrapper';
         wrapper.id = `video-wrapper-${index}`;
@@ -249,12 +224,9 @@
     function initPlayers() {
       players = [];
 
-      config.videos.forEach((videoUrl, index) => {
-        const videoId = extractVideoId(videoUrl);
-        if (!videoId) return;
-
+      config.videos.forEach((video, index) => {
         const player = new YT.Player(`player-${index}`, {
-          videoId: videoId,
+          videoId: video.videoId,
           playerVars: {
             autoplay: 0,
             controls: 0,
@@ -273,7 +245,7 @@
               }
             },
             onStateChange: (event) => {
-              if (event.data === YT.PlayerState.ENDED && config.autoplay) {
+              if (event.data === YT.PlayerState.ENDED) {
                 nextVideo();
               }
             }
@@ -286,6 +258,14 @@
     function showVideo(index) {
       if (index < 0 || index >= config.videos.length) return;
 
+      const video = config.videos[index];
+
+      // Si el video está deshabilitado, saltar al siguiente
+      if (video.isEnabled === false) {
+        nextVideo();
+        return;
+      }
+
       // Ocultar todos los videos
       document.querySelectorAll('.video-wrapper').forEach(wrapper => {
         wrapper.classList.remove('active');
@@ -297,6 +277,10 @@
           player.pauseVideo();
         }
       });
+
+      // Actualizar badge con ubicación del video actual
+      const locationText = document.getElementById('location-text');
+      locationText.textContent = video.location || 'YouTube';
 
       // Mostrar y reproducir el video actual
       const wrapper = document.getElementById(`video-wrapper-${index}`);
@@ -311,24 +295,42 @@
 
       config.currentIndex = index;
 
-      // Configurar timer para autoplay
-      if (config.autoplay) {
-        clearTimeout(autoplayTimer);
-        autoplayTimer = setTimeout(() => {
-          nextVideo();
-        }, config.duration * 1000);
-      }
+      // Configurar timer para rotación automática
+      clearTimeout(rotationTimer);
+      rotationTimer = setTimeout(() => {
+        nextVideo();
+      }, config.intervalSeconds * 1000);
     }
 
-    // Siguiente video
+    // Siguiente video (solo habilitados)
     function nextVideo() {
-      const nextIndex = (config.currentIndex + 1) % config.videos.length;
+      const enabledVideos = config.videos.filter(v => v.isEnabled !== false);
+      if (enabledVideos.length === 0) return;
+
+      let nextIndex = (config.currentIndex + 1) % config.videos.length;
+      let attempts = 0;
+
+      while (config.videos[nextIndex].isEnabled === false && attempts < config.videos.length) {
+        nextIndex = (nextIndex + 1) % config.videos.length;
+        attempts++;
+      }
+
       showVideo(nextIndex);
     }
 
-    // Anterior video
+    // Anterior video (solo habilitados)
     function previousVideo() {
-      const prevIndex = (config.currentIndex - 1 + config.videos.length) % config.videos.length;
+      const enabledVideos = config.videos.filter(v => v.isEnabled !== false);
+      if (enabledVideos.length === 0) return;
+
+      let prevIndex = (config.currentIndex - 1 + config.videos.length) % config.videos.length;
+      let attempts = 0;
+
+      while (config.videos[prevIndex].isEnabled === false && attempts < config.videos.length) {
+        prevIndex = (prevIndex - 1 + config.videos.length) % config.videos.length;
+        attempts++;
+      }
+
       showVideo(prevIndex);
     }
 
