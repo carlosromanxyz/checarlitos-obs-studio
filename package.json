@@ -1,0 +1,24 @@
+{
+  "name": "checarlitos-obs-studio",
+  "version": "1.0.0",
+  "description": "Sistema de overlays para OBS Studio optimizado para TikTok (9:16) - El Rincón del Che Carlitos",
+  "main": "server/serve.js",
+  "scripts": {
+    "start": "node server/serve.js",
+    "serve": "node server/serve.js"
+  },
+  "keywords": [
+    "obs",
+    "overlay",
+    "tiktok",
+    "streaming",
+    "9:16",
+    "vertical",
+    "radio"
+  ],
+  "author": "Carlos Roman",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
