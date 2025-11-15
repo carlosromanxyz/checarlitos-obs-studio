@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overlays Controller - El Rincón del Che Carlitos</title>
+
+  <!-- Tailwind CSS v4 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts - Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'radio-red': '#FF3B3B',
+            'radio-gold': '#FFD700',
+            'radio-charcoal': '#2C2C2C',
+            'radio-silver': '#C0C0C0',
+            'radio-wave': '#00D9FF',
+            'radio-amber': '#FFBF00',
+            'radio-slate': '#4A4A4A',
+            'radio-cream': '#F5F5DC',
+          },
+          fontFamily: {
+            'poppins': ['Poppins', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #1a1a1a;
+      color: #F5F5DC;
+      margin: 0;
+      padding: 16px;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #2C2C2C 0%, #1a1a1a 100%);
+      border: 1px solid #00D9FF;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #00D9FF;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .header p {
+      font-size: 12px;
+      color: #C0C0C0;
+      margin: 4px 0 0 0;
+    }
+
+    /* Accordion */
+    .accordion-item {
+      background: #2C2C2C;
+      border: 1px solid #4A4A4A;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .accordion-item:hover {
+      border-color: #00D9FF;
+    }
+
+    .accordion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .accordion-header:hover {
+      background: rgba(0, 217, 255, 0.05);
+    }
+
+    .accordion-header.active {
+      background: rgba(0, 217, 255, 0.1);
+      border-bottom: 1px solid #4A4A4A;
+    }
+
+    .accordion-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #00D9FF;
+    }
+
+    .accordion-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .accordion-header.active .accordion-icon {
+      transform: rotate(180deg);
+    }
+
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .accordion-content.active {
+      max-height: 2000px;
+    }
+
+    .accordion-body {
+      padding: 16px;
+    }
+
+    /* Common styles */
+    .section {
+      background: #1a1a1a;
+      border: 1px solid #4A4A4A;
+      border-radius: 6px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #FFD700;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      background: #0d0d0d;
+      border: 1px solid #4A4A4A;
+      color: #F5F5DC;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #00D9FF;
+      box-shadow: 0 0 0 2px rgba(0, 217, 255, 0.2);
+    }
+
+    button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .btn-primary {
+      background: #00D9FF;
+      color: #1a1a1a;
+    }
+
+    .btn-primary:hover {
+      background: #00AECC;
+      box-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+    }
+
+    .btn-secondary {
+      background: #4A4A4A;
+      color: #F5F5DC;
+    }
+
+    .btn-secondary:hover {
+      background: #5c5c5c;
+    }
+
+    .btn-danger {
+      background: #FF3B3B;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #CC2F2F;
+    }
+
+    .btn-success {
+      background: #FFD700;
+      color: #1a1a1a;
+    }
+
+    .btn-success:hover {
+      background: #CCB300;
+    }
+
+    .toggle-btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .toggle-btn.active {
+      background: #FFD700;
+      color: #1a1a1a;
+    }
+
+    .video-item {
+      background: #0d0d0d;
+      border: 1px solid #4A4A4A;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .video-item.active {
+      border-color: #00D9FF;
+      background: rgba(0, 217, 255, 0.1);
+    }
+
+    .video-url {
+      flex: 1;
+      font-size: 11px;
+      color: #C0C0C0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: #C0C0C0;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    .status-indicator.on {
+      background: #FFD700;
+      box-shadow: 0 0 10px #FFD700;
+      animation: pulse 2s infinite;
+    }
+
+    .status-indicator.off {
+      background: #4A4A4A;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>
+      <i class="fa-solid fa-microphone mr-2"></i>
+      El Rincón del Che Carlitos
+    </h1>
+    <p>Control de Overlays - TikTok (9:16)</p>
+  </div>
+
+  <!-- Accordion de Widgets -->
+
+  <!-- ==================== YOUTUBE CAROUSEL ==================== -->
+  <div class="accordion-item">
+    <div class="accordion-header" onclick="toggleAccordion('youtube-carousel')">
+      <div class="accordion-title">
+        <i class="fa-brands fa-youtube"></i>
+        <span>Carrusel de YouTube</span>
+        <span id="youtube-status-indicator" class="status-indicator off"></span>
+      </div>
+      <i class="fa-solid fa-chevron-down accordion-icon"></i>
+    </div>
+    <div class="accordion-content" id="youtube-carousel-content">
+      <div class="accordion-body">
+
+        <!-- Toggle visibilidad -->
+        <div class="section">
+          <button id="youtube-toggle-btn" class="toggle-btn" onclick="youtubeToggleVisibility()">
+            <span id="youtube-status-text">Mostrar Overlay</span>
+          </button>
+        </div>
+
+        <!-- Configuración de ubicación -->
+        <div class="section">
+          <div class="section-title">
+            <i class="fa-solid fa-location-dot mr-2"></i>
+            Ubicación del Badge
+          </div>
+          <label>Texto de ubicación (línea 2 del badge)</label>
+          <input
+            type="text"
+            id="youtube-location-input"
+            placeholder="Ej: Santiago, Chile"
+            onchange="youtubeUpdateLocation()"
+          >
+        </div>
+
+        <!-- Gestión de videos -->
+        <div class="section">
+          <div class="section-title">
+            <i class="fa-solid fa-list mr-2"></i>
+            Lista de Videos
+          </div>
+
+          <label>Agregar URL de YouTube</label>
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <input
+              type="text"
+              id="youtube-video-url-input"
+              placeholder="https://youtube.com/watch?v=..."
+              style="flex: 1;"
+            >
+            <button class="btn-primary" onclick="youtubeAddVideo()">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+
+          <div id="youtube-video-list">
+            <!-- Videos se cargarán dinámicamente -->
+          </div>
+        </div>
+
+        <!-- Configuración de reproducción -->
+        <div class="section">
+          <div class="section-title">
+            <i class="fa-solid fa-sliders mr-2"></i>
+            Configuración
+          </div>
+
+          <label>Duración por video (segundos)</label>
+          <input
+            type="number"
+            id="youtube-duration-input"
+            min="5"
+            max="300"
+            value="30"
+            onchange="youtubeUpdateDuration()"
+            style="margin-bottom: 10px;"
+          >
+
+          <button id="youtube-autoplay-btn" class="toggle-btn" onclick="youtubeToggleAutoplay()">
+            <i class="fa-solid fa-play mr-2"></i>
+            <span id="youtube-autoplay-text">Autoplay: ON</span>
+          </button>
+        </div>
+
+        <!-- Controles de navegación -->
+        <div class="section">
+          <div class="section-title">
+            <i class="fa-solid fa-gamepad mr-2"></i>
+            Navegación
+          </div>
+
+          <div class="controls-grid">
+            <button class="btn-secondary" onclick="youtubePreviousVideo()">
+              <i class="fa-solid fa-backward mr-2"></i>
+              Anterior
+            </button>
+            <button class="btn-secondary" onclick="youtubeNextVideo()">
+              Siguiente
+              <i class="fa-solid fa-forward ml-2"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Widget scripts -->
+  <script src="../js/youtube-carousel-widget.js"></script>
+
+  <script>
+    // ==================== ACCORDION LOGIC ====================
+    function toggleAccordion(id) {
+      const content = document.getElementById(id + '-content');
+      const header = content.previousElementSibling;
+
+      // Toggle active class
+      header.classList.toggle('active');
+      content.classList.toggle('active');
+    }
+
+    // ==================== YOUTUBE CAROUSEL LOGIC ====================
+    let youtubeConfig = {};
+
+    function youtubeLoadConfig() {
+      youtubeConfig = YoutubeCarouselWidget.load();
+      youtubeUpdateUI();
+    }
+
+    function youtubeUpdateUI() {
+      // Toggle button
+      const toggleBtn = document.getElementById('youtube-toggle-btn');
+      const statusIndicator = document.getElementById('youtube-status-indicator');
+      const statusText = document.getElementById('youtube-status-text');
+
+      if (youtubeConfig.isVisible) {
+        toggleBtn.classList.add('active');
+        statusIndicator.classList.remove('off');
+        statusIndicator.classList.add('on');
+        statusText.textContent = 'Ocultar Overlay';
+      } else {
+        toggleBtn.classList.remove('active');
+        statusIndicator.classList.remove('on');
+        statusIndicator.classList.add('off');
+        statusText.textContent = 'Mostrar Overlay';
+      }
+
+      // Location input
+      document.getElementById('youtube-location-input').value = youtubeConfig.location || '';
+
+      // Duration input
+      document.getElementById('youtube-duration-input').value = youtubeConfig.duration || 30;
+
+      // Autoplay button
+      const autoplayBtn = document.getElementById('youtube-autoplay-btn');
+      const autoplayText = document.getElementById('youtube-autoplay-text');
+      if (youtubeConfig.autoplay) {
+        autoplayBtn.classList.add('active');
+        autoplayText.textContent = 'Autoplay: ON';
+      } else {
+        autoplayBtn.classList.remove('active');
+        autoplayText.textContent = 'Autoplay: OFF';
+      }
+
+      // Video list
+      youtubeRenderVideoList();
+    }
+
+    function youtubeRenderVideoList() {
+      const videoList = document.getElementById('youtube-video-list');
+
+      if (!youtubeConfig.videos || youtubeConfig.videos.length === 0) {
+        videoList.innerHTML = '<p style="color: #C0C0C0; font-size: 11px; text-align: center; padding: 12px;">No hay videos agregados</p>';
+        return;
+      }
+
+      videoList.innerHTML = youtubeConfig.videos.map((url, index) => {
+        const isActive = index === youtubeConfig.currentIndex;
+        return `
+          <div class="video-item ${isActive ? 'active' : ''}">
+            <span class="video-url">${index + 1}. ${url}</span>
+            <div style="display: flex; gap: 4px;">
+              ${isActive ? '<i class="fa-solid fa-play" style="color: #00D9FF; font-size: 12px;"></i>' : ''}
+              <button class="btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="youtubeGoToVideo(${index})">
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+              <button class="btn-danger" style="padding: 4px 8px; font-size: 11px;" onclick="youtubeRemoveVideo(${index})">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function youtubeToggleVisibility() {
+      YoutubeCarouselWidget.toggleVisibility();
+      youtubeLoadConfig();
+    }
+
+    function youtubeUpdateLocation() {
+      const location = document.getElementById('youtube-location-input').value;
+      YoutubeCarouselWidget.setLocation(location);
+      youtubeLoadConfig();
+    }
+
+    function youtubeAddVideo() {
+      const input = document.getElementById('youtube-video-url-input');
+      const url = input.value.trim();
+
+      if (!url) {
+        alert('Por favor ingresa una URL de YouTube');
+        return;
+      }
+
+      if (!YoutubeCarouselWidget.isValidYoutubeUrl(url)) {
+        alert('URL de YouTube inválida');
+        return;
+      }
+
+      YoutubeCarouselWidget.addVideo(url);
+      input.value = '';
+      youtubeLoadConfig();
+    }
+
+    function youtubeRemoveVideo(index) {
+      if (confirm('¿Eliminar este video?')) {
+        YoutubeCarouselWidget.removeVideo(index);
+        youtubeLoadConfig();
+      }
+    }
+
+    function youtubeUpdateDuration() {
+      const duration = parseInt(document.getElementById('youtube-duration-input').value);
+      YoutubeCarouselWidget.setDuration(duration);
+      youtubeLoadConfig();
+    }
+
+    function youtubeToggleAutoplay() {
+      YoutubeCarouselWidget.toggleAutoplay();
+      youtubeLoadConfig();
+    }
+
+    function youtubeNextVideo() {
+      YoutubeCarouselWidget.nextVideo();
+      youtubeLoadConfig();
+    }
+
+    function youtubePreviousVideo() {
+      YoutubeCarouselWidget.previousVideo();
+      youtubeLoadConfig();
+    }
+
+    function youtubeGoToVideo(index) {
+      YoutubeCarouselWidget.goToVideo(index);
+      youtubeLoadConfig();
+    }
+
+    // ==================== INITIALIZATION ====================
+
+    // Escuchar cambios en localStorage
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'youtubeCarouselConfig') {
+        youtubeLoadConfig();
+      }
+    });
+
+    // Polling para sincronización (OBS compatibility)
+    setInterval(() => {
+      const newConfig = YoutubeCarouselWidget.load();
+      if (JSON.stringify(newConfig) !== JSON.stringify(youtubeConfig)) {
+        youtubeConfig = newConfig;
+        youtubeUpdateUI();
+      }
+    }, 1000);
+
+    // Inicializar todos los widgets
+    youtubeLoadConfig();
+  </script>
+
+</body>
+</html>
