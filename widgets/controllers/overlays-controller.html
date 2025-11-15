@@ -3,18 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Overlays Controller - El Rincón del Che Carlitos</title>
+  <title>Overlays Controller</title>
 
   <!-- Tailwind CSS v4 -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <!-- Google Fonts - Poppins -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -29,374 +21,139 @@
             'radio-amber': '#FFBF00',
             'radio-slate': '#4A4A4A',
             'radio-cream': '#F5F5DC',
-          },
-          fontFamily: {
-            'poppins': ['Poppins', 'sans-serif'],
-          },
+          }
         }
       }
     }
   </script>
-
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #1a1a1a;
-      color: #F5F5DC;
-      margin: 0;
-      padding: 16px;
-    }
-
-    /* Accordion */
-    .accordion-item {
-      background: #2C2C2C;
-      border: 1px solid #4A4A4A;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .accordion-item:hover {
-      border-color: #00D9FF;
-    }
-
-    .accordion-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 16px;
-      cursor: pointer;
-      user-select: none;
-      transition: background 0.2s;
-    }
-
-    .accordion-header:hover {
-      background: rgba(0, 217, 255, 0.05);
-    }
-
-    .accordion-header.active {
-      background: rgba(0, 217, 255, 0.1);
-      border-bottom: 1px solid #4A4A4A;
-    }
-
-    .accordion-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #00D9FF;
-    }
-
-    .accordion-icon {
-      transition: transform 0.3s ease;
-    }
-
-    .accordion-header.active .accordion-icon {
-      transform: rotate(180deg);
-    }
-
-    .accordion-content {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
-
-    .accordion-content.active {
-      max-height: 2000px;
-    }
-
-    .accordion-body {
-      padding: 16px;
-    }
-
-    /* Common styles */
-    .section {
-      background: #1a1a1a;
-      border: 1px solid #4A4A4A;
-      border-radius: 6px;
-      padding: 14px;
-      margin-bottom: 12px;
-    }
-
-    .section-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: #FFD700;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      background: #0d0d0d;
-      border: 1px solid #4A4A4A;
-      color: #F5F5DC;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      outline: none;
-      border-color: #00D9FF;
-      box-shadow: 0 0 0 2px rgba(0, 217, 255, 0.2);
-    }
-
-    button {
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .btn-primary {
-      background: #00D9FF;
-      color: #1a1a1a;
-    }
-
-    .btn-primary:hover {
-      background: #00AECC;
-      box-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
-    }
-
-    .btn-secondary {
-      background: #4A4A4A;
-      color: #F5F5DC;
-    }
-
-    .btn-secondary:hover {
-      background: #5c5c5c;
-    }
-
-    .btn-danger {
-      background: #FF3B3B;
-      color: white;
-    }
-
-    .btn-danger:hover {
-      background: #CC2F2F;
-    }
-
-    .btn-success {
-      background: #FFD700;
-      color: #1a1a1a;
-    }
-
-    .btn-success:hover {
-      background: #CCB300;
-    }
-
-    .toggle-btn {
-      width: 100%;
-      padding: 12px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .toggle-btn.active {
-      background: #FFD700;
-      color: #1a1a1a;
-    }
-
-    .video-item {
-      background: #0d0d0d;
-      border: 1px solid #4A4A4A;
-      border-radius: 6px;
-      padding: 10px;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .video-item.active {
-      border-color: #00D9FF;
-      background: rgba(0, 217, 255, 0.1);
-    }
-
-    .video-url {
-      flex: 1;
-      font-size: 11px;
-      color: #C0C0C0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .controls-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    label {
-      display: block;
-      font-size: 12px;
-      color: #C0C0C0;
-      margin-bottom: 6px;
-      font-weight: 500;
-    }
-
-    .status-indicator {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 6px;
-    }
-
-    .status-indicator.on {
-      background: #FFD700;
-      box-shadow: 0 0 10px #FFD700;
-      animation: pulse 2s infinite;
-    }
-
-    .status-indicator.off {
-      background: #4A4A4A;
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.5;
-      }
-    }
-  </style>
 </head>
-<body>
+<body class="bg-zinc-900 text-white p-4 font-sans">
 
-  <!-- Accordion de Widgets -->
+  <div class="space-y-2">
 
-  <!-- ==================== YOUTUBE CAROUSEL ==================== -->
-  <div class="accordion-item">
-    <div class="accordion-header" onclick="toggleAccordion('youtube-carousel')">
-      <div class="accordion-title">
-        <i class="fa-brands fa-youtube"></i>
-        <span>Carrusel de YouTube</span>
-        <span id="youtube-status-indicator" class="status-indicator off"></span>
+    <!-- ==================== YOUTUBE CAROUSEL ==================== -->
+    <div class="border border-zinc-700 rounded-lg overflow-hidden">
+      <!-- Header -->
+      <div class="flex items-center gap-3 p-3 bg-zinc-800 hover:bg-zinc-700 transition-colors">
+        <span class="text-sm font-medium flex-1 cursor-pointer" onclick="toggleAccordion('youtube-carousel')">
+          <i class="fa-brands fa-youtube mr-2"></i>
+          Carrusel de YouTube
+        </span>
+
+        <!-- Toggle Switch -->
+        <label class="relative cursor-pointer">
+          <input type="checkbox" id="youtube-visible-toggle" class="sr-only peer" onchange="youtubeToggleVisibility(this.checked)">
+          <div class="w-11 h-6 bg-zinc-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-radio-wave rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-radio-wave"></div>
+        </label>
+
+        <!-- Chevron -->
+        <svg id="youtube-carousel-chevron" class="w-5 h-5 text-zinc-400 transition-transform duration-200 cursor-pointer" onclick="toggleAccordion('youtube-carousel')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
       </div>
-      <i class="fa-solid fa-chevron-down accordion-icon"></i>
-    </div>
-    <div class="accordion-content" id="youtube-carousel-content">
-      <div class="accordion-body">
 
-        <!-- Toggle visibilidad -->
-        <div class="section">
-          <button id="youtube-toggle-btn" class="toggle-btn" onclick="youtubeToggleVisibility()">
-            <span id="youtube-status-text">Mostrar Overlay</span>
-          </button>
-        </div>
+      <!-- Content -->
+      <div id="youtube-carousel-content" class="bg-zinc-800/50 border-t border-zinc-700 hidden">
+        <div class="p-3 space-y-3">
 
-        <!-- Configuración de ubicación -->
-        <div class="section">
-          <div class="section-title">
-            <i class="fa-solid fa-location-dot mr-2"></i>
-            Ubicación del Badge
-          </div>
-          <label>Texto de ubicación (línea 2 del badge)</label>
-          <input
-            type="text"
-            id="youtube-location-input"
-            placeholder="Ej: Santiago, Chile"
-            onchange="youtubeUpdateLocation()"
-          >
-        </div>
-
-        <!-- Gestión de videos -->
-        <div class="section">
-          <div class="section-title">
-            <i class="fa-solid fa-list mr-2"></i>
-            Lista de Videos
-          </div>
-
-          <label>Agregar URL de YouTube</label>
-          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <!-- Ubicación -->
+          <div>
+            <label class="block text-xs text-zinc-400 mb-1">Ubicación (badge)</label>
             <input
               type="text"
-              id="youtube-video-url-input"
-              placeholder="https://youtube.com/watch?v=..."
-              style="flex: 1;"
+              id="youtube-location-input"
+              placeholder="Ej: Santiago, Chile"
+              class="w-full bg-zinc-900 border border-zinc-600 text-white px-3 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
+              onchange="youtubeUpdateLocation(this.value)"
             >
-            <button class="btn-primary" onclick="youtubeAddVideo()">
-              <i class="fa-solid fa-plus"></i>
+          </div>
+
+          <!-- Agregar video -->
+          <div>
+            <label class="block text-xs text-zinc-400 mb-1">Agregar URL de YouTube</label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                id="youtube-video-url-input"
+                placeholder="https://youtube.com/watch?v=..."
+                class="flex-1 bg-zinc-900 border border-zinc-600 text-white px-3 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
+              >
+              <button
+                onclick="youtubeAddVideo()"
+                class="bg-radio-wave hover:bg-radio-wave/80 text-zinc-900 px-4 py-2 rounded text-sm font-medium"
+              >
+                Agregar
+              </button>
+            </div>
+          </div>
+
+          <!-- Lista de videos -->
+          <div>
+            <label class="block text-xs text-zinc-400 mb-1">Videos (<span id="youtube-video-count">0</span>)</label>
+            <div id="youtube-video-list" class="max-h-64 overflow-y-auto space-y-1">
+              <!-- Videos dinámicos -->
+            </div>
+          </div>
+
+          <!-- Duración -->
+          <div>
+            <label class="block text-xs text-zinc-400 mb-1">Duración por video (segundos)</label>
+            <input
+              type="number"
+              id="youtube-duration-input"
+              min="5"
+              max="300"
+              value="30"
+              class="w-full bg-zinc-900 border border-zinc-600 text-white px-3 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
+              onchange="youtubeUpdateDuration(this.value)"
+            >
+          </div>
+
+          <!-- Autoplay -->
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-zinc-300">Autoplay</span>
+            <label class="relative cursor-pointer">
+              <input type="checkbox" id="youtube-autoplay-toggle" class="sr-only peer" onchange="youtubeToggleAutoplay(this.checked)">
+              <div class="w-11 h-6 bg-zinc-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-radio-wave rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-radio-wave"></div>
+            </label>
+          </div>
+
+          <!-- Navegación -->
+          <div class="flex gap-2">
+            <button
+              onclick="youtubePreviousVideo()"
+              class="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-2 rounded text-sm"
+            >
+              ← Anterior
+            </button>
+            <button
+              onclick="youtubeNextVideo()"
+              class="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-2 rounded text-sm"
+            >
+              Siguiente →
             </button>
           </div>
 
-          <div id="youtube-video-list">
-            <!-- Videos se cargarán dinámicamente -->
-          </div>
         </div>
-
-        <!-- Configuración de reproducción -->
-        <div class="section">
-          <div class="section-title">
-            <i class="fa-solid fa-sliders mr-2"></i>
-            Configuración
-          </div>
-
-          <label>Duración por video (segundos)</label>
-          <input
-            type="number"
-            id="youtube-duration-input"
-            min="5"
-            max="300"
-            value="30"
-            onchange="youtubeUpdateDuration()"
-            style="margin-bottom: 10px;"
-          >
-
-          <button id="youtube-autoplay-btn" class="toggle-btn" onclick="youtubeToggleAutoplay()">
-            <i class="fa-solid fa-play mr-2"></i>
-            <span id="youtube-autoplay-text">Autoplay: ON</span>
-          </button>
-        </div>
-
-        <!-- Controles de navegación -->
-        <div class="section">
-          <div class="section-title">
-            <i class="fa-solid fa-gamepad mr-2"></i>
-            Navegación
-          </div>
-
-          <div class="controls-grid">
-            <button class="btn-secondary" onclick="youtubePreviousVideo()">
-              <i class="fa-solid fa-backward mr-2"></i>
-              Anterior
-            </button>
-            <button class="btn-secondary" onclick="youtubeNextVideo()">
-              Siguiente
-              <i class="fa-solid fa-forward ml-2"></i>
-            </button>
-          </div>
-        </div>
-
       </div>
     </div>
+
   </div>
 
-  <!-- Widget scripts -->
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Widget Scripts -->
   <script src="../js/youtube-carousel-widget.js"></script>
 
   <script>
     // ==================== ACCORDION LOGIC ====================
-    function toggleAccordion(id) {
-      const content = document.getElementById(id + '-content');
-      const header = content.previousElementSibling;
+    function toggleAccordion(section) {
+      const content = document.getElementById(section + '-content');
+      const chevron = document.getElementById(section + '-chevron');
 
-      // Toggle active class
-      header.classList.toggle('active');
-      content.classList.toggle('active');
+      content.classList.toggle('hidden');
+      chevron.classList.toggle('rotate-180');
     }
 
     // ==================== YOUTUBE CAROUSEL LOGIC ====================
@@ -408,39 +165,20 @@
     }
 
     function youtubeUpdateUI() {
-      // Toggle button
-      const toggleBtn = document.getElementById('youtube-toggle-btn');
-      const statusIndicator = document.getElementById('youtube-status-indicator');
-      const statusText = document.getElementById('youtube-status-text');
+      // Toggle principal
+      document.getElementById('youtube-visible-toggle').checked = youtubeConfig.isVisible;
 
-      if (youtubeConfig.isVisible) {
-        toggleBtn.classList.add('active');
-        statusIndicator.classList.remove('off');
-        statusIndicator.classList.add('on');
-        statusText.textContent = 'Ocultar Overlay';
-      } else {
-        toggleBtn.classList.remove('active');
-        statusIndicator.classList.remove('on');
-        statusIndicator.classList.add('off');
-        statusText.textContent = 'Mostrar Overlay';
-      }
-
-      // Location input
+      // Location
       document.getElementById('youtube-location-input').value = youtubeConfig.location || '';
 
-      // Duration input
+      // Duration
       document.getElementById('youtube-duration-input').value = youtubeConfig.duration || 30;
 
-      // Autoplay button
-      const autoplayBtn = document.getElementById('youtube-autoplay-btn');
-      const autoplayText = document.getElementById('youtube-autoplay-text');
-      if (youtubeConfig.autoplay) {
-        autoplayBtn.classList.add('active');
-        autoplayText.textContent = 'Autoplay: ON';
-      } else {
-        autoplayBtn.classList.remove('active');
-        autoplayText.textContent = 'Autoplay: OFF';
-      }
+      // Autoplay
+      document.getElementById('youtube-autoplay-toggle').checked = youtubeConfig.autoplay;
+
+      // Video count
+      document.getElementById('youtube-video-count').textContent = youtubeConfig.videos?.length || 0;
 
       // Video list
       youtubeRenderVideoList();
@@ -450,37 +188,40 @@
       const videoList = document.getElementById('youtube-video-list');
 
       if (!youtubeConfig.videos || youtubeConfig.videos.length === 0) {
-        videoList.innerHTML = '<p style="color: #C0C0C0; font-size: 11px; text-align: center; padding: 12px;">No hay videos agregados</p>';
+        videoList.innerHTML = '<p class="text-xs text-zinc-500 text-center py-4">No hay videos agregados</p>';
         return;
       }
 
       videoList.innerHTML = youtubeConfig.videos.map((url, index) => {
         const isActive = index === youtubeConfig.currentIndex;
         return `
-          <div class="video-item ${isActive ? 'active' : ''}">
-            <span class="video-url">${index + 1}. ${url}</span>
-            <div style="display: flex; gap: 4px;">
-              ${isActive ? '<i class="fa-solid fa-play" style="color: #00D9FF; font-size: 12px;"></i>' : ''}
-              <button class="btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="youtubeGoToVideo(${index})">
-                <i class="fa-solid fa-arrow-right"></i>
-              </button>
-              <button class="btn-danger" style="padding: 4px 8px; font-size: 11px;" onclick="youtubeRemoveVideo(${index})">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </div>
+          <div class="flex items-center gap-2 bg-zinc-900 border ${isActive ? 'border-radio-wave' : 'border-zinc-700'} rounded p-2">
+            <span class="flex-1 text-xs text-zinc-400 truncate">${index + 1}. ${url}</span>
+            ${isActive ? '<i class="fa-solid fa-play text-radio-wave text-xs"></i>' : ''}
+            <button
+              onclick="youtubeGoToVideo(${index})"
+              class="bg-zinc-700 hover:bg-zinc-600 text-white px-2 py-1 rounded text-xs"
+            >
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <button
+              onclick="youtubeRemoveVideo(${index})"
+              class="bg-red-900/50 hover:bg-red-900 text-red-400 px-2 py-1 rounded text-xs"
+            >
+              <i class="fa-solid fa-trash"></i>
+            </button>
           </div>
         `;
       }).join('');
     }
 
-    function youtubeToggleVisibility() {
-      YoutubeCarouselWidget.toggleVisibility();
+    function youtubeToggleVisibility(checked) {
+      YoutubeCarouselWidget.update({ isVisible: checked });
       youtubeLoadConfig();
     }
 
-    function youtubeUpdateLocation() {
-      const location = document.getElementById('youtube-location-input').value;
-      YoutubeCarouselWidget.setLocation(location);
+    function youtubeUpdateLocation(value) {
+      YoutubeCarouselWidget.setLocation(value);
       youtubeLoadConfig();
     }
 
@@ -510,14 +251,13 @@
       }
     }
 
-    function youtubeUpdateDuration() {
-      const duration = parseInt(document.getElementById('youtube-duration-input').value);
-      YoutubeCarouselWidget.setDuration(duration);
+    function youtubeUpdateDuration(value) {
+      YoutubeCarouselWidget.setDuration(parseInt(value));
       youtubeLoadConfig();
     }
 
-    function youtubeToggleAutoplay() {
-      YoutubeCarouselWidget.toggleAutoplay();
+    function youtubeToggleAutoplay(checked) {
+      YoutubeCarouselWidget.update({ autoplay: checked });
       youtubeLoadConfig();
     }
 
@@ -538,13 +278,6 @@
 
     // ==================== INITIALIZATION ====================
 
-    // Escuchar cambios en localStorage
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'youtubeCarouselConfig') {
-        youtubeLoadConfig();
-      }
-    });
-
     // Polling para sincronización (OBS compatibility)
     setInterval(() => {
       const newConfig = YoutubeCarouselWidget.load();
@@ -554,7 +287,7 @@
       }
     }, 1000);
 
-    // Inicializar todos los widgets
+    // Inicializar
     youtubeLoadConfig();
   </script>
 
