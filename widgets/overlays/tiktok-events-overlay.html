@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Events Overlay</title>
+
+  <!-- Tailwind CSS v4 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'radio-red': '#FF3B3B',
+            'radio-gold': '#FFD700',
+            'radio-charcoal': '#2C2C2C',
+            'radio-wave': '#00D9FF',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
+
+  <!-- Google Fonts - Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Socket.io Client -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: transparent;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Animación de entrada: slide down + bounce */
+    @keyframes slideDownBounce {
+      0% {
+        transform: translateY(-150%) scale(0.8);
+        opacity: 0;
+      }
+      60% {
+        transform: translateY(10%) scale(1.05);
+        opacity: 1;
+      }
+      80% {
+        transform: translateY(-5%) scale(0.95);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Animación de salida: slide up + fade */
+    @keyframes slideUpFade {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-150%) scale(0.8);
+        opacity: 0;
+      }
+    }
+
+    .event-container {
+      opacity: 0;
+      transform: translateY(-150%);
+    }
+
+    .event-container.animate-in {
+      animation: slideDownBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .event-container.animate-out {
+      animation: slideUpFade 0.5s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+
+    /* Wave (saludo) animation para la mano */
+    @keyframes wave {
+      0%, 100% {
+        transform: rotate(0deg);
+      }
+      10%, 30% {
+        transform: rotate(14deg);
+      }
+      20%, 40% {
+        transform: rotate(-8deg);
+      }
+      50% {
+        transform: rotate(14deg);
+      }
+      60% {
+        transform: rotate(-4deg);
+      }
+      70% {
+        transform: rotate(10deg);
+      }
+      80% {
+        transform: rotate(0deg);
+      }
+    }
+
+    .icon-wave {
+      animation: wave 2s ease-in-out infinite;
+      display: inline-block;
+      transform-origin: 70% 70%;
+    }
+
+    /* Pulse animation para el corazón */
+    @keyframes heartBeat {
+      0%, 100% {
+        transform: scale(1);
+      }
+      10%, 30% {
+        transform: scale(1.2);
+      }
+      20%, 40% {
+        transform: scale(1.1);
+      }
+    }
+
+    .heart-beat {
+      animation: heartBeat 1.5s ease-in-out infinite;
+    }
+
+    /* Sparkle animation para estrellas */
+    @keyframes sparkle {
+      0%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+
+    .sparkle {
+      animation: sparkle 1s ease-in-out infinite;
+    }
+
+    .sparkle:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+
+    .sparkle:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Events Container -->
+  <div class="fixed" style="top: 50%; left: 64px; right: 64px; transform: translateY(-50%);">
+    <div id="events-queue">
+      <!-- Event items will be added here -->
+    </div>
+  </div>
+
+  <script>
+    // Connect to Socket.io server with auto-reconnect
+    const socket = io('http://localhost:8080', {
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+      transports: ['websocket', 'polling']
+    });
+
+    // Global event queue
+    let eventQueue = [];
+    let isShowing = false;
+
+    // Event settings (loaded from localStorage)
+    let eventSettings = {
+      greetings: true,
+      followers: true,
+      topliker: true
+    };
+
+    // Load event settings from localStorage
+    function loadEventSettings() {
+      const saved = localStorage.getItem('tiktokEventSettings');
+      if (saved) {
+        eventSettings = JSON.parse(saved);
+      }
+      console.log('📊 Event settings loaded:', eventSettings);
+    }
+
+    // Socket.io connection
+    socket.on('connect', () => {
+      console.log('✅ Conectado al servidor Socket.io (TikTok Events)');
+      loadEventSettings();
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log(`🔄 Reconectado al servidor después de ${attemptNumber} intentos`);
+    });
+
+    socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log(`🔄 Intento de reconexión #${attemptNumber}`);
+    });
+
+    socket.on('reconnect_error', (error) => {
+      console.log('❌ Error al reconectar:', error.message);
+    });
+
+    // Listen for toggle events from controller
+    socket.on('tiktok:toggle-event', (data) => {
+      eventSettings[data.eventType] = data.enabled;
+      localStorage.setItem('tiktokEventSettings', JSON.stringify(eventSettings));
+      console.log(`📊 Event ${data.eventType} ${data.enabled ? 'enabled' : 'disabled'}`);
+    });
+
+    // Listen for new TikTok members (greetings)
+    socket.on('tiktok:member', (data) => {
+      if (!eventSettings.greetings) {
+        console.log('👤 Nuevo espectador (ignorado - deshabilitado):', data.username);
+        return;
+      }
+      console.log('👤 Nuevo espectador:', data);
+      addEvent({
+        type: 'greeting',
+        username: data.username,
+        nickname: data.nickname,
+        timestamp: Date.now()
+      });
+    });
+
+    // Listen for new TikTok followers
+    socket.on('tiktok:follow', (data) => {
+      if (!eventSettings.followers) {
+        console.log('❤️ Nuevo seguidor (ignorado - deshabilitado):', data.username);
+        return;
+      }
+      console.log('❤️ Nuevo seguidor:', data);
+      addEvent({
+        type: 'follower',
+        username: data.username,
+        nickname: data.nickname,
+        timestamp: Date.now()
+      });
+    });
+
+    // Listen for Top 3 Liker events
+    socket.on('tiktok:topliker', (data) => {
+      if (!eventSettings.topliker) {
+        console.log('🏆 Top 3 Likers (ignorado - deshabilitado)');
+        return;
+      }
+      console.log('🏆 Top 3 Likers:', data.top3);
+      addEvent({
+        type: 'topliker',
+        top3: data.top3 || [],
+        timestamp: Date.now()
+      });
+    });
+
+    // Add event to queue
+    function addEvent(event) {
+      eventQueue.push(event);
+
+      // Process queue if not currently showing an event
+      if (!isShowing) {
+        processQueue();
+      }
+    }
+
+    // Process event queue
+    function processQueue() {
+      if (eventQueue.length === 0) {
+        isShowing = false;
+        return;
+      }
+
+      isShowing = true;
+      const event = eventQueue.shift();
+
+      showEvent(event);
+    }
+
+    // Show event based on type
+    function showEvent(event) {
+      const container = document.getElementById('events-queue');
+
+      // Create event element
+      const eventDiv = document.createElement('div');
+      eventDiv.className = 'event-container';
+
+      // Generate HTML based on event type
+      if (event.type === 'greeting') {
+        eventDiv.innerHTML = createGreetingHTML(event);
+      } else if (event.type === 'follower') {
+        eventDiv.innerHTML = createFollowerHTML(event);
+      } else if (event.type === 'topliker') {
+        eventDiv.innerHTML = createTopLikerHTML(event);
+      }
+
+      // Add to container
+      container.appendChild(eventDiv);
+
+      // Trigger entrance animation
+      setTimeout(() => {
+        eventDiv.classList.add('animate-in');
+      }, 50);
+
+      // Auto-remove after duration
+      const duration = event.type === 'greeting' ? 5000 : 6000;
+      setTimeout(() => {
+        // Trigger exit animation
+        eventDiv.classList.remove('animate-in');
+        eventDiv.classList.add('animate-out');
+
+        // Remove from DOM after animation
+        setTimeout(() => {
+          eventDiv.remove();
+
+          // Process next in queue
+          processQueue();
+        }, 500);
+      }, duration);
+    }
+
+    // Create greeting HTML
+    function createGreetingHTML(event) {
+      return `
+        <div class="flex rounded-2xl border-4 border-radio-gold overflow-hidden bg-gradient-to-t from-radio-charcoal to-black shadow-2xl w-full" style="border-width: 4px;">
+          <!-- Icon Section -->
+          <div class="bg-radio-red flex items-center justify-center px-16 py-12" style="flex-shrink: 0;">
+            <i class="fa-regular fa-hand text-radio-gold icon-wave" style="font-size: 8rem;"></i>
+          </div>
+
+          <!-- Greeting Content -->
+          <div class="bg-gradient-to-t from-black to-radio-charcoal px-16 py-12 flex items-center" style="flex: 1; min-width: 0;">
+            <div class="w-full">
+              <p class="text-white font-bold mb-3" style="font-size: 3.5rem; word-break: break-word; line-height: 1.2;">
+                ¡Hola <span class="text-radio-gold">@${escapeHtml(event.username)}</span>!
+              </p>
+              <p class="text-radio-wave font-medium" style="font-size: 2rem;">
+                Bienvenid@ al live
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Create follower HTML
+    function createFollowerHTML(event) {
+      return `
+        <div class="relative">
+          <!-- Sparkles decoration -->
+          <div class="absolute -top-6 -left-6">
+            <i class="fa-solid fa-star text-radio-gold text-2xl sparkle"></i>
+          </div>
+          <div class="absolute -top-8 -right-4">
+            <i class="fa-solid fa-star text-radio-gold text-xl sparkle"></i>
+          </div>
+          <div class="absolute -bottom-6 -right-8">
+            <i class="fa-solid fa-star text-radio-gold text-2xl sparkle"></i>
+          </div>
+
+          <!-- Main badge -->
+          <div class="flex rounded-2xl border-4 border-radio-gold overflow-hidden bg-gradient-to-br from-radio-red via-red-600 to-radio-charcoal shadow-2xl w-full" style="border-width: 4px;">
+
+            <!-- Icon Section -->
+            <div class="bg-radio-gold flex items-center justify-center px-16 py-12" style="flex-shrink: 0;">
+              <i class="fa-solid fa-heart text-radio-red heart-beat" style="font-size: 8rem;"></i>
+            </div>
+
+            <!-- Content -->
+            <div class="bg-gradient-to-br from-radio-charcoal to-black px-16 py-12 flex items-center" style="flex: 1; min-width: 0;">
+              <div class="w-full">
+                <p class="text-radio-gold font-bold mb-3 uppercase tracking-wide" style="font-size: 2.5rem;">
+                  ¡Nuevo Seguidor!
+                </p>
+                <p class="text-white font-black mb-2" style="font-size: 3.5rem; word-break: break-word; line-height: 1.2;">
+                  @${escapeHtml(event.username)}
+                </p>
+                <p class="text-radio-wave font-medium" style="font-size: 2rem;">
+                  ¡Gracias por el apoyo! 🎉
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // Create top 3 liker HTML (podio)
+    function createTopLikerHTML(event) {
+      const top3 = event.top3 || [];
+      const medals = ['🥇', '🥈', '🥉'];
+      const positions = ['1°', '2°', '3°'];
+
+      let rankingHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const user = top3[i];
+        if (user) {
+          rankingHTML += `
+            <div class="flex items-center gap-4 mb-4 last:mb-0">
+              <div class="text-6xl">${medals[i]}</div>
+              <div class="flex-1">
+                <p class="text-white font-black" style="font-size: 2.5rem; word-break: break-word; line-height: 1.2;">
+                  @${escapeHtml(user.username)}
+                </p>
+                <p class="text-radio-gold font-semibold" style="font-size: 1.5rem;">
+                  ${user.likeCount} likes
+                </p>
+              </div>
+            </div>
+          `;
+        } else {
+          rankingHTML += `
+            <div class="flex items-center gap-4 mb-4 last:mb-0 opacity-30">
+              <div class="text-6xl">${medals[i]}</div>
+              <div class="flex-1">
+                <p class="text-gray-500 font-bold" style="font-size: 2.5rem;">
+                  ${positions[i]} Lugar
+                </p>
+                <p class="text-gray-600 font-medium" style="font-size: 1.5rem;">
+                  Sin datos
+                </p>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      return `
+        <div class="relative">
+          <!-- Trophy decorations -->
+          <div class="absolute -top-6 -left-6">
+            <i class="fa-solid fa-trophy text-radio-gold text-3xl sparkle"></i>
+          </div>
+          <div class="absolute -top-8 -right-4">
+            <i class="fa-solid fa-trophy text-radio-gold text-2xl sparkle"></i>
+          </div>
+          <div class="absolute -bottom-6 -right-8">
+            <i class="fa-solid fa-trophy text-radio-gold text-3xl sparkle"></i>
+          </div>
+
+          <!-- Main badge -->
+          <div class="rounded-2xl border-4 border-radio-gold overflow-hidden bg-gradient-to-br from-radio-charcoal to-black shadow-2xl w-full" style="border-width: 4px;">
+
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-radio-gold via-yellow-500 to-radio-gold px-16 py-8 text-center">
+              <p class="text-radio-charcoal font-black uppercase tracking-wider" style="font-size: 3.5rem;">
+                🏆 Top 3 Likers 🏆
+              </p>
+            </div>
+
+            <!-- Ranking -->
+            <div class="px-16 py-12">
+              ${rankingHTML}
+            </div>
+
+          </div>
+        </div>
+      `;
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, (m) => map[m]);
+    }
+
+    // Handle Socket.io errors
+    socket.on('tiktok:error', (data) => {
+      console.error('❌ Error de TikTok:', data.message);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Desconectado del servidor');
+    });
+  </script>
+
+</body>
+</html>

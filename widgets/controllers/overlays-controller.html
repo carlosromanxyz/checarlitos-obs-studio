@@ -31,6 +31,197 @@
 
   <div class="space-y-2">
 
+    <!-- ==================== TIKTOK LIVE ==================== -->
+    <div class="border border-zinc-700 rounded-lg overflow-hidden bg-zinc-800">
+      <div class="p-4 space-y-3">
+
+        <!-- Header -->
+        <div class="flex items-center gap-3">
+          <i class="fa-brands fa-tiktok text-radio-wave text-2xl"></i>
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold">TikTok Live</h3>
+            <p class="text-xs text-zinc-400">Conecta tu cuenta para recibir eventos en tiempo real</p>
+          </div>
+          <div id="tiktok-status-badge" class="hidden">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30">
+              <i class="fa-solid fa-circle text-xs mr-1 animate-pulse"></i>
+              Conectado
+            </span>
+          </div>
+        </div>
+
+        <!-- Username Input -->
+        <div>
+          <label class="block text-sm font-medium text-zinc-300 mb-2">
+            <i class="fa-solid fa-at mr-1"></i>
+            Username de TikTok
+          </label>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              id="tiktok-username-input"
+              placeholder="tu_username"
+              class="flex-1 px-4 py-2 bg-zinc-700 border border-zinc-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave focus:border-transparent"
+            >
+            <button
+              id="tiktok-connect-btn"
+              onclick="tiktokConnect()"
+              class="px-6 py-2 bg-radio-wave hover:bg-radio-wave/80 text-zinc-900 font-semibold rounded transition-colors text-sm whitespace-nowrap"
+            >
+              <i class="fa-solid fa-plug mr-1"></i>
+              Conectar
+            </button>
+            <button
+              id="tiktok-disconnect-btn"
+              onclick="tiktokDisconnect()"
+              class="hidden px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-semibold rounded transition-colors text-sm whitespace-nowrap"
+            >
+              <i class="fa-solid fa-plug-circle-xmark mr-1"></i>
+              Desconectar
+            </button>
+          </div>
+          <p class="text-xs text-zinc-500 mt-1">
+            <i class="fa-solid fa-info-circle mr-1"></i>
+            Solo el username, sin @ (ejemplo: checarlitos)
+          </p>
+        </div>
+
+        <!-- Event Toggles -->
+        <div class="border-t border-zinc-700 pt-3">
+          <label class="block text-sm font-medium text-zinc-300 mb-3">
+            <i class="fa-solid fa-bell mr-1"></i>
+            Eventos a Mostrar
+          </label>
+          <div class="space-y-2">
+            <!-- Greetings Toggle -->
+            <label class="flex items-center justify-between p-2 bg-zinc-700/50 rounded cursor-pointer hover:bg-zinc-700 transition-colors">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-hand-wave text-radio-wave"></i>
+                <span class="text-sm">Saludos (Nuevos espectadores)</span>
+              </div>
+              <input type="checkbox" id="toggle-greetings" checked onchange="toggleEvent('greetings', this.checked)" class="w-4 h-4 text-radio-wave bg-zinc-600 border-zinc-500 rounded focus:ring-radio-wave focus:ring-2">
+            </label>
+
+            <!-- Followers Toggle -->
+            <label class="flex items-center justify-between p-2 bg-zinc-700/50 rounded cursor-pointer hover:bg-zinc-700 transition-colors">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-heart text-radio-red"></i>
+                <span class="text-sm">Nuevos Seguidores</span>
+              </div>
+              <input type="checkbox" id="toggle-followers" checked onchange="toggleEvent('followers', this.checked)" class="w-4 h-4 text-radio-wave bg-zinc-600 border-zinc-500 rounded focus:ring-radio-wave focus:ring-2">
+            </label>
+
+            <!-- Top Liker Toggle -->
+            <label class="flex items-center justify-between p-2 bg-zinc-700/50 rounded cursor-pointer hover:bg-zinc-700 transition-colors">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-trophy text-radio-gold"></i>
+                <span class="text-sm">Top Liker</span>
+              </div>
+              <input type="checkbox" id="toggle-topliker" checked onchange="toggleEvent('topliker', this.checked)" class="w-4 h-4 text-radio-wave bg-zinc-600 border-zinc-500 rounded focus:ring-radio-wave focus:ring-2">
+            </label>
+          </div>
+        </div>
+
+        <!-- Connection Status -->
+        <div id="tiktok-status-message" class="hidden text-sm p-3 rounded">
+          <!-- Status messages will appear here -->
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ==================== LOGO ==================== -->
+    <div class="border border-zinc-700 rounded-lg overflow-hidden">
+      <!-- Header -->
+      <div class="flex items-center gap-3 p-3 bg-zinc-800 hover:bg-zinc-700 transition-colors">
+        <span class="text-sm font-medium flex-1 cursor-pointer" onclick="toggleAccordion('logo')">
+          <i class="fa-solid fa-microphone mr-2"></i>
+          Logo
+        </span>
+
+        <!-- Toggle Switch -->
+        <label class="relative cursor-pointer">
+          <input type="checkbox" id="logo-visible-toggle" class="sr-only peer" onchange="logoToggleVisibility(this.checked)">
+          <div class="w-11 h-6 bg-zinc-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-radio-wave rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-radio-wave"></div>
+        </label>
+
+        <!-- Chevron -->
+        <svg id="logo-chevron" class="w-5 h-5 text-zinc-400 transition-transform duration-200 cursor-pointer" onclick="toggleAccordion('logo')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+
+      <!-- Content -->
+      <div id="logo-content" class="bg-zinc-800/50 border-t border-zinc-700 hidden">
+        <div class="p-3 space-y-3">
+
+          <!-- Mostrar texto toggle -->
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              id="logo-text-toggle"
+              onchange="logoToggleText(this.checked)"
+              class="w-4 h-4 text-radio-wave bg-zinc-600 border-zinc-500 rounded focus:ring-radio-wave focus:ring-2"
+            >
+            <span class="text-sm text-zinc-300 font-medium">Mostrar texto "El Rincón del Che Carlitos"</span>
+          </label>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== FRASES MOTIVACIONALES ==================== -->
+    <div class="border border-zinc-700 rounded-lg overflow-hidden">
+      <!-- Header -->
+      <div class="flex items-center gap-3 p-3 bg-zinc-800 hover:bg-zinc-700 transition-colors">
+        <span class="text-sm font-medium flex-1 cursor-pointer" onclick="toggleAccordion('quotes')">
+          <i class="fa-solid fa-quote-left mr-2"></i>
+          Frases Motivacionales
+        </span>
+
+        <!-- Toggle Switch -->
+        <label class="relative cursor-pointer">
+          <input type="checkbox" id="quotes-visible-toggle" class="sr-only peer" onchange="quotesToggleVisibility(this.checked)">
+          <div class="w-11 h-6 bg-zinc-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-radio-wave rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-radio-wave"></div>
+        </label>
+
+        <!-- Chevron -->
+        <svg id="quotes-chevron" class="w-5 h-5 text-zinc-400 transition-transform duration-200 cursor-pointer" onclick="toggleAccordion('quotes')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </div>
+
+      <!-- Content -->
+      <div id="quotes-content" class="bg-zinc-800/50 border-t border-zinc-700 hidden">
+        <div class="p-3 space-y-3">
+
+          <!-- Intervalo de rotación -->
+          <label class="block">
+            <span class="text-sm text-zinc-300 font-medium">Intervalo de rotación</span>
+            <div class="flex items-center gap-2 mt-1">
+              <input
+                type="number"
+                id="quotes-interval-input"
+                min="10"
+                max="60"
+                value="20"
+                onchange="quotesUpdateInterval(this.value)"
+                class="flex-1 px-3 py-2 bg-zinc-700 border border-zinc-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
+              >
+              <span class="text-xs text-zinc-400 whitespace-nowrap">segundos</span>
+            </div>
+          </label>
+
+          <!-- Info -->
+          <div class="text-xs text-zinc-400 bg-zinc-900/50 p-2 rounded">
+            <i class="fa-solid fa-info-circle mr-1"></i>
+            <span>30 frases motivacionales en español</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
     <!-- ==================== YOUTUBE CAROUSEL ==================== -->
     <div class="border border-zinc-700 rounded-lg overflow-hidden">
       <!-- Header -->
@@ -108,10 +299,179 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+  <!-- Socket.io Client -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
   <!-- Widget Scripts -->
+  <script src="../js/tiktok-widget.js"></script>
+  <script src="../js/logo-widget.js"></script>
+  <script src="../js/quotes-widget.js"></script>
   <script src="../js/youtube-carousel-widget.js"></script>
 
   <script>
+    // ==================== SOCKET.IO CONNECTION ====================
+    const socket = io('http://localhost:8080', {
+      reconnection: true,           // Habilitar reconexión automática
+      reconnectionAttempts: Infinity, // Intentos infinitos
+      reconnectionDelay: 1000,      // Esperar 1s antes de reconectar
+      reconnectionDelayMax: 5000,   // Máximo 5s entre intentos
+      timeout: 20000,               // Timeout de conexión 20s
+      transports: ['websocket', 'polling']
+    });
+
+    socket.on('connect', () => {
+      console.log('✅ Conectado al servidor Socket.io (Controller)');
+      // Verificar estado de TikTok al reconectar
+      tiktokLoadConfig();
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Desconectado del servidor');
+      updateTikTokUI(false);
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log(`🔄 Reconectado al servidor después de ${attemptNumber} intentos`);
+      showTikTokStatus('Reconectado al servidor', 'success');
+    });
+
+    socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log(`🔄 Intento de reconexión #${attemptNumber}`);
+    });
+
+    socket.on('reconnect_error', (error) => {
+      console.log('❌ Error al reconectar:', error.message);
+    });
+
+    // ==================== TIKTOK LIVE LOGIC ====================
+    let tiktokConfig = {};
+
+    function tiktokLoadConfig() {
+      tiktokConfig = TikTokWidget.load();
+      updateTikTokUI(tiktokConfig.isConnected);
+
+      // Set username input
+      document.getElementById('tiktok-username-input').value = tiktokConfig.username || '';
+
+      // Load event settings
+      loadEventSettings();
+    }
+
+    function updateTikTokUI(isConnected) {
+      const statusBadge = document.getElementById('tiktok-status-badge');
+      const connectBtn = document.getElementById('tiktok-connect-btn');
+      const disconnectBtn = document.getElementById('tiktok-disconnect-btn');
+      const usernameInput = document.getElementById('tiktok-username-input');
+
+      if (isConnected) {
+        statusBadge.classList.remove('hidden');
+        connectBtn.classList.add('hidden');
+        disconnectBtn.classList.remove('hidden');
+        usernameInput.disabled = true;
+      } else {
+        statusBadge.classList.add('hidden');
+        connectBtn.classList.remove('hidden');
+        disconnectBtn.classList.add('hidden');
+        usernameInput.disabled = false;
+      }
+    }
+
+    function showTikTokStatus(message, type = 'info') {
+      const statusDiv = document.getElementById('tiktok-status-message');
+      const colors = {
+        'success': 'bg-green-500/20 text-green-400 border border-green-500/30',
+        'error': 'bg-red-500/20 text-red-400 border border-red-500/30',
+        'info': 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+      };
+
+      statusDiv.className = `text-sm p-3 rounded ${colors[type]}`;
+      statusDiv.textContent = message;
+      statusDiv.classList.remove('hidden');
+
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        statusDiv.classList.add('hidden');
+      }, 5000);
+    }
+
+    function tiktokConnect() {
+      const username = document.getElementById('tiktok-username-input').value.trim();
+
+      if (!username) {
+        showTikTokStatus('Por favor ingresa tu username de TikTok', 'error');
+        return;
+      }
+
+      // Remove @ if user included it
+      const cleanUsername = username.replace('@', '');
+
+      // Save to localStorage
+      TikTokWidget.setUsername(cleanUsername);
+
+      // Send to server via Socket.io
+      socket.emit('tiktok:configure', { username: cleanUsername });
+
+      showTikTokStatus(`Conectando a TikTok Live como @${cleanUsername}...`, 'info');
+    }
+
+    function tiktokDisconnect() {
+      socket.emit('tiktok:disconnect');
+      TikTokWidget.setConnected(false);
+      showTikTokStatus('Desconectado de TikTok Live', 'info');
+      updateTikTokUI(false);
+    }
+
+    // Toggle event visibility
+    function toggleEvent(eventType, enabled) {
+      const settings = JSON.parse(localStorage.getItem('tiktokEventSettings') || '{"greetings":true,"followers":true,"topliker":true}');
+      settings[eventType] = enabled;
+      localStorage.setItem('tiktokEventSettings', JSON.stringify(settings));
+
+      // Emit to overlay via Socket.io
+      socket.emit('tiktok:toggle-event', { eventType, enabled });
+
+      console.log(`📊 Evento ${eventType}: ${enabled ? 'activado' : 'desactivado'}`);
+    }
+
+    // Load event settings on page load
+    function loadEventSettings() {
+      const settings = JSON.parse(localStorage.getItem('tiktokEventSettings') || '{"greetings":true,"followers":true,"topliker":true}');
+      document.getElementById('toggle-greetings').checked = settings.greetings;
+      document.getElementById('toggle-followers').checked = settings.followers;
+      document.getElementById('toggle-topliker').checked = settings.topliker;
+    }
+
+    // Listen for TikTok connection events
+    socket.on('tiktok:connected', (data) => {
+      console.log('✅ Conectado a TikTok:', data.username);
+      TikTokWidget.setConnected(true);
+      TikTokWidget.setUsername(data.username);
+      updateTikTokUI(true);
+      showTikTokStatus(`¡Conectado a TikTok Live como @${data.username}!`, 'success');
+    });
+
+    socket.on('tiktok:disconnected', () => {
+      console.log('❌ Desconectado de TikTok');
+      TikTokWidget.setConnected(false);
+      updateTikTokUI(false);
+    });
+
+    socket.on('tiktok:error', (data) => {
+      console.error('❌ Error de TikTok:', data.message);
+      TikTokWidget.setConnected(false);
+      updateTikTokUI(false);
+      showTikTokStatus(`Error: ${data.message}`, 'error');
+    });
+
+    socket.on('tiktok:status', (data) => {
+      console.log('📊 Estado de TikTok:', data);
+      TikTokWidget.setConnected(data.connected);
+      if (data.username) {
+        TikTokWidget.setUsername(data.username);
+      }
+      updateTikTokUI(data.connected);
+    });
+
     // ==================== ACCORDION LOGIC ====================
     function toggleAccordion(section) {
       const content = document.getElementById(section + '-content');
@@ -119,6 +479,58 @@
 
       content.classList.toggle('hidden');
       chevron.classList.toggle('rotate-180');
+    }
+
+    // ==================== LOGO LOGIC ====================
+    let logoConfig = {};
+
+    function logoLoadConfig() {
+      logoConfig = LogoWidget.load();
+      logoUpdateUI();
+    }
+
+    function logoUpdateUI() {
+      // Toggle principal
+      document.getElementById('logo-visible-toggle').checked = logoConfig.isVisible;
+
+      // Toggle texto
+      document.getElementById('logo-text-toggle').checked = logoConfig.showText;
+    }
+
+    function logoToggleVisibility(checked) {
+      LogoWidget.update({ isVisible: checked });
+      logoLoadConfig();
+    }
+
+    function logoToggleText(checked) {
+      LogoWidget.update({ showText: checked });
+      logoLoadConfig();
+    }
+
+    // ==================== QUOTES LOGIC ====================
+    let quotesConfig = {};
+
+    function quotesLoadConfig() {
+      quotesConfig = QuotesWidget.load();
+      quotesUpdateUI();
+    }
+
+    function quotesUpdateUI() {
+      // Toggle principal
+      document.getElementById('quotes-visible-toggle').checked = quotesConfig.isVisible;
+
+      // Interval
+      document.getElementById('quotes-interval-input').value = quotesConfig.intervalSeconds || 20;
+    }
+
+    function quotesToggleVisibility(checked) {
+      QuotesWidget.update({ isVisible: checked });
+      quotesLoadConfig();
+    }
+
+    function quotesUpdateInterval(value) {
+      QuotesWidget.setInterval(parseInt(value));
+      quotesLoadConfig();
     }
 
     // ==================== YOUTUBE CAROUSEL LOGIC ====================
@@ -225,6 +637,21 @@
 
     // Polling para sincronización (OBS compatibility)
     setInterval(() => {
+      // Logo polling
+      const newLogoConfig = LogoWidget.load();
+      if (JSON.stringify(newLogoConfig) !== JSON.stringify(logoConfig)) {
+        logoConfig = newLogoConfig;
+        logoUpdateUI();
+      }
+
+      // Quotes polling
+      const newQuotesConfig = QuotesWidget.load();
+      if (JSON.stringify(newQuotesConfig) !== JSON.stringify(quotesConfig)) {
+        quotesConfig = newQuotesConfig;
+        quotesUpdateUI();
+      }
+
+      // YouTube Carousel polling
       const newConfig = YoutubeCarouselWidget.load();
       if (JSON.stringify(newConfig) !== JSON.stringify(youtubeConfig)) {
         youtubeConfig = newConfig;
@@ -233,6 +660,9 @@
     }, 1000);
 
     // Inicializar
+    tiktokLoadConfig();
+    logoLoadConfig();
+    quotesLoadConfig();
     youtubeLoadConfig();
   </script>
 

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Events Simulator - El Rincón del Che Carlitos</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'radio-red': '#FF3B3B',
+            'radio-gold': '#FFD700',
+            'radio-charcoal': '#2C2C2C',
+            'radio-wave': '#00D9FF',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts - Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Socket.io Client -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #2C2C2C 0%, #1a1a1a 100%);
+      min-height: 100vh;
+    }
+  </style>
+</head>
+<body class="p-8">
+
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-radio-red to-red-600 rounded-lg p-6 mb-8 shadow-2xl">
+      <h1 class="text-4xl font-black text-white mb-2">
+        <i class="fa-solid fa-flask mr-3"></i>
+        TikTok Events Simulator
+      </h1>
+      <p class="text-white/90 text-lg">
+        Simula eventos de TikTok Live para probar tus overlays sin necesidad de estar en vivo
+      </p>
+    </div>
+
+    <!-- Connection Status -->
+    <div class="bg-radio-charcoal rounded-lg p-6 mb-6 shadow-xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div id="connection-indicator" class="w-4 h-4 rounded-full bg-gray-500"></div>
+          <span id="connection-status" class="text-white text-lg font-semibold">Desconectado</span>
+        </div>
+        <span class="text-radio-wave font-mono text-sm">ws://localhost:8080</span>
+      </div>
+    </div>
+
+    <!-- Test Controls -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- New Viewer (Member) -->
+      <div class="bg-radio-charcoal rounded-lg p-6 shadow-xl border-2 border-radio-wave/20">
+        <div class="flex items-center gap-3 mb-4">
+          <i class="fa-solid fa-hand-wave text-radio-wave text-3xl"></i>
+          <h2 class="text-2xl font-bold text-white">Nuevo Espectador</h2>
+        </div>
+        <p class="text-gray-400 mb-4">Simula que un usuario se une al live</p>
+        <input
+          type="text"
+          id="member-username"
+          placeholder="@usuario"
+          class="w-full px-4 py-2 rounded-lg bg-black/50 border-2 border-radio-wave/30 text-white mb-3 focus:border-radio-wave outline-none"
+          value="carlos_test"
+        >
+        <button
+          onclick="simulateMember()"
+          class="w-full bg-radio-wave hover:bg-cyan-400 text-black font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+        >
+          Enviar Evento
+        </button>
+      </div>
+
+      <!-- New Follower -->
+      <div class="bg-radio-charcoal rounded-lg p-6 shadow-xl border-2 border-radio-red/20">
+        <div class="flex items-center gap-3 mb-4">
+          <i class="fa-solid fa-heart text-radio-red text-3xl"></i>
+          <h2 class="text-2xl font-bold text-white">Nuevo Seguidor</h2>
+        </div>
+        <p class="text-gray-400 mb-4">Simula que un usuario te sigue</p>
+        <input
+          type="text"
+          id="follower-username"
+          placeholder="@usuario"
+          class="w-full px-4 py-2 rounded-lg bg-black/50 border-2 border-radio-red/30 text-white mb-3 focus:border-radio-red outline-none"
+          value="fan_numero_1"
+        >
+        <button
+          onclick="simulateFollow()"
+          class="w-full bg-radio-red hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+        >
+          Enviar Evento
+        </button>
+      </div>
+
+      <!-- Chat Message -->
+      <div class="bg-radio-charcoal rounded-lg p-6 shadow-xl border-2 border-radio-gold/20">
+        <div class="flex items-center gap-3 mb-4">
+          <i class="fa-solid fa-message text-radio-gold text-3xl"></i>
+          <h2 class="text-2xl font-bold text-white">Mensaje de Chat</h2>
+        </div>
+        <p class="text-gray-400 mb-4">Simula un mensaje en el chat</p>
+        <input
+          type="text"
+          id="chat-username"
+          placeholder="@usuario"
+          class="w-full px-4 py-2 rounded-lg bg-black/50 border-2 border-radio-gold/30 text-white mb-3 focus:border-radio-gold outline-none"
+          value="espectador123"
+        >
+        <input
+          type="text"
+          id="chat-message"
+          placeholder="Mensaje..."
+          class="w-full px-4 py-2 rounded-lg bg-black/50 border-2 border-radio-gold/30 text-white mb-3 focus:border-radio-gold outline-none"
+          value="¡Hola Che Carlitos! 👋"
+        >
+        <button
+          onclick="simulateChat()"
+          class="w-full bg-radio-gold hover:bg-yellow-500 text-black font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+        >
+          Enviar Evento
+        </button>
+      </div>
+
+      <!-- Gift -->
+      <div class="bg-radio-charcoal rounded-lg p-6 shadow-xl border-2 border-purple-500/20">
+        <div class="flex items-center gap-3 mb-4">
+          <i class="fa-solid fa-gift text-purple-400 text-3xl"></i>
+          <h2 class="text-2xl font-bold text-white">Regalo</h2>
+        </div>
+        <p class="text-gray-400 mb-4">Simula que un usuario envía un regalo</p>
+        <input
+          type="text"
+          id="gift-username"
+          placeholder="@usuario"
+          class="w-full px-4 py-2 rounded-lg bg-black/50 border-2 border-purple-500/30 text-white mb-3 focus:border-purple-500 outline-none"
+          value="generoso_fan"
+        >
+        <input
+          type="text"
+          id="gift-name"
+          placeholder="Nombre del regalo"
+          class="w-full px-4 py-2 rounded-lg bg-black/50 border-2 border-purple-500/30 text-white mb-3 focus:border-purple-500 outline-none"
+          value="Rosa"
+        >
+        <input
+          type="number"
+          id="gift-count"
+          placeholder="Cantidad"
+          class="w-full px-4 py-2 rounded-lg bg-black/50 border-2 border-purple-500/30 text-white mb-3 focus:border-purple-500 outline-none"
+          value="1"
+          min="1"
+        >
+        <button
+          onclick="simulateGift()"
+          class="w-full bg-purple-500 hover:bg-purple-400 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+        >
+          Enviar Evento
+        </button>
+      </div>
+
+      <!-- Share -->
+      <div class="bg-radio-charcoal rounded-lg p-6 shadow-xl border-2 border-blue-500/20">
+        <div class="flex items-center gap-3 mb-4">
+          <i class="fa-solid fa-share text-blue-400 text-3xl"></i>
+          <h2 class="text-2xl font-bold text-white">Compartir Live</h2>
+        </div>
+        <p class="text-gray-400 mb-4">Simula que un usuario comparte el live</p>
+        <input
+          type="text"
+          id="share-username"
+          placeholder="@usuario"
+          class="w-full px-4 py-2 rounded-lg bg-black/50 border-2 border-blue-500/30 text-white mb-3 focus:border-blue-500 outline-none"
+          value="promotor_oficial"
+        >
+        <button
+          onclick="simulateShare()"
+          class="w-full bg-blue-500 hover:bg-blue-400 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+        >
+          Enviar Evento
+        </button>
+      </div>
+
+      <!-- Like -->
+      <div class="bg-radio-charcoal rounded-lg p-6 shadow-xl border-2 border-pink-500/20">
+        <div class="flex items-center gap-3 mb-4">
+          <i class="fa-solid fa-heart text-pink-400 text-3xl"></i>
+          <h2 class="text-2xl font-bold text-white">Likes</h2>
+        </div>
+        <p class="text-gray-400 mb-4">Simula likes en el live</p>
+        <input
+          type="text"
+          id="like-username"
+          placeholder="@usuario"
+          class="w-full px-4 py-2 rounded-lg bg-black/50 border-2 border-pink-500/30 text-white mb-3 focus:border-pink-500 outline-none"
+          value="fan_activo"
+        >
+        <input
+          type="number"
+          id="like-count"
+          placeholder="Cantidad de likes"
+          class="w-full px-4 py-2 rounded-lg bg-black/50 border-2 border-pink-500/30 text-white mb-3 focus:border-pink-500 outline-none"
+          value="5"
+          min="1"
+        >
+        <button
+          onclick="simulateLike()"
+          class="w-full bg-pink-500 hover:bg-pink-400 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105"
+        >
+          Enviar Evento
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Event Log -->
+    <div class="bg-radio-charcoal rounded-lg p-6 mt-6 shadow-xl">
+      <h2 class="text-2xl font-bold text-white mb-4">
+        <i class="fa-solid fa-list text-radio-gold mr-2"></i>
+        Log de Eventos
+      </h2>
+      <div id="event-log" class="bg-black/50 rounded-lg p-4 h-64 overflow-y-auto font-mono text-sm">
+        <p class="text-gray-500">Esperando eventos...</p>
+      </div>
+      <button
+        onclick="clearLog()"
+        class="mt-4 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
+      >
+        <i class="fa-solid fa-trash mr-2"></i>Limpiar Log
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    // Connect to Socket.io server with auto-reconnect
+    const socket = io('http://localhost:8080', {
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+      transports: ['websocket', 'polling']
+    });
+
+    // Connection status
+    socket.on('connect', () => {
+      updateConnectionStatus(true);
+      logEvent('✅ Conectado al servidor', 'success');
+    });
+
+    socket.on('disconnect', () => {
+      updateConnectionStatus(false);
+      logEvent('❌ Desconectado del servidor', 'error');
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      logEvent(`🔄 Reconectado después de ${attemptNumber} intentos`, 'success');
+    });
+
+    socket.on('reconnect_attempt', (attemptNumber) => {
+      logEvent(`🔄 Intentando reconectar... #${attemptNumber}`, 'info');
+    });
+
+    // Update connection indicator
+    function updateConnectionStatus(connected) {
+      const indicator = document.getElementById('connection-indicator');
+      const status = document.getElementById('connection-status');
+
+      if (connected) {
+        indicator.className = 'w-4 h-4 rounded-full bg-green-500 animate-pulse';
+        status.textContent = 'Conectado';
+        status.className = 'text-green-400 text-lg font-semibold';
+      } else {
+        indicator.className = 'w-4 h-4 rounded-full bg-red-500';
+        status.textContent = 'Desconectado';
+        status.className = 'text-red-400 text-lg font-semibold';
+      }
+    }
+
+    // Simulate member join
+    function simulateMember() {
+      const username = document.getElementById('member-username').value.trim().replace('@', '');
+      if (!username) {
+        alert('Por favor ingresa un nombre de usuario');
+        return;
+      }
+
+      const data = {
+        username: username,
+        nickname: username,
+        profilePictureUrl: '',
+        timestamp: Date.now()
+      };
+
+      socket.emit('test:member', data);
+      logEvent(`👤 Espectador: @${username}`, 'member');
+    }
+
+    // Simulate follow
+    function simulateFollow() {
+      const username = document.getElementById('follower-username').value.trim().replace('@', '');
+      if (!username) {
+        alert('Por favor ingresa un nombre de usuario');
+        return;
+      }
+
+      const data = {
+        username: username,
+        nickname: username,
+        profilePictureUrl: '',
+        timestamp: Date.now()
+      };
+
+      socket.emit('test:follow', data);
+      logEvent(`❤️ Seguidor: @${username}`, 'follow');
+    }
+
+    // Simulate chat message
+    function simulateChat() {
+      const username = document.getElementById('chat-username').value.trim().replace('@', '');
+      const message = document.getElementById('chat-message').value.trim();
+
+      if (!username || !message) {
+        alert('Por favor ingresa usuario y mensaje');
+        return;
+      }
+
+      const data = {
+        username: username,
+        nickname: username,
+        comment: message,
+        profilePictureUrl: '',
+        timestamp: Date.now()
+      };
+
+      socket.emit('test:chat', data);
+      logEvent(`💬 ${username}: ${message}`, 'chat');
+    }
+
+    // Simulate gift
+    function simulateGift() {
+      const username = document.getElementById('gift-username').value.trim().replace('@', '');
+      const giftName = document.getElementById('gift-name').value.trim();
+      const count = parseInt(document.getElementById('gift-count').value) || 1;
+
+      if (!username || !giftName) {
+        alert('Por favor completa todos los campos');
+        return;
+      }
+
+      const data = {
+        username: username,
+        nickname: username,
+        giftName: giftName,
+        giftId: Math.floor(Math.random() * 1000),
+        repeatCount: count,
+        repeatEnd: true,
+        profilePictureUrl: '',
+        timestamp: Date.now()
+      };
+
+      socket.emit('test:gift', data);
+      logEvent(`🎁 ${username} envió ${giftName} (x${count})`, 'gift');
+    }
+
+    // Simulate share
+    function simulateShare() {
+      const username = document.getElementById('share-username').value.trim().replace('@', '');
+      if (!username) {
+        alert('Por favor ingresa un nombre de usuario');
+        return;
+      }
+
+      const data = {
+        username: username,
+        nickname: username,
+        profilePictureUrl: '',
+        timestamp: Date.now()
+      };
+
+      socket.emit('test:share', data);
+      logEvent(`🔗 ${username} compartió el live`, 'share');
+    }
+
+    // Simulate like
+    function simulateLike() {
+      const username = document.getElementById('like-username').value.trim().replace('@', '');
+      const count = parseInt(document.getElementById('like-count').value) || 1;
+
+      if (!username) {
+        alert('Por favor ingresa un nombre de usuario');
+        return;
+      }
+
+      const data = {
+        username: username,
+        nickname: username,
+        likeCount: count,
+        totalLikeCount: Math.floor(Math.random() * 10000),
+        timestamp: Date.now()
+      };
+
+      socket.emit('test:like', data);
+      logEvent(`💖 ${username} dio ${count} like(s)`, 'like');
+    }
+
+    // Log event to console
+    function logEvent(message, type = 'info') {
+      const log = document.getElementById('event-log');
+      const timestamp = new Date().toLocaleTimeString();
+
+      const colorMap = {
+        success: 'text-green-400',
+        error: 'text-red-400',
+        member: 'text-cyan-400',
+        follow: 'text-red-300',
+        chat: 'text-yellow-400',
+        gift: 'text-purple-400',
+        share: 'text-blue-400',
+        like: 'text-pink-400',
+        info: 'text-gray-400'
+      };
+
+      const color = colorMap[type] || colorMap.info;
+
+      const entry = document.createElement('p');
+      entry.className = `${color} mb-1`;
+      entry.innerHTML = `<span class="text-gray-600">[${timestamp}]</span> ${message}`;
+
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Clear log
+    function clearLog() {
+      const log = document.getElementById('event-log');
+      log.innerHTML = '<p class="text-gray-500">Log limpiado...</p>';
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quotes Overlay</title>
+
+  <!-- Tailwind CSS v4 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'radio-red': '#FF3B3B',
+            'radio-gold': '#FFD700',
+            'radio-charcoal': '#2C2C2C',
+            'radio-wave': '#00D9FF',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts - Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: transparent;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Animaciones de entrada */
+
+    /* Border zoom in */
+    @keyframes zoom-in-border {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Icon slide from left */
+    @keyframes slide-in-icon {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Quote slide from left */
+    @keyframes slide-in-quote {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Apply entrance animations - Sequential timing */
+    .quote-container.animate-entrance {
+      animation: zoom-in-border 0.4s cubic-bezier(0.25, 0.1, 0.25, 1.0) forwards;
+    }
+
+    .quote-icon.animate-entrance {
+      animation: slide-in-icon 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) 0.4s forwards;
+    }
+
+    .quote-content.animate-entrance {
+      animation: slide-in-quote 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) 0.9s forwards;
+    }
+
+    /* Exit animation (fade out) */
+    @keyframes fade-out {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+
+    .quote-container.animate-exit,
+    .quote-icon.animate-exit,
+    .quote-content.animate-exit {
+      animation: fade-out 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) forwards;
+    }
+
+    /* Initial state - hidden */
+    .quote-container,
+    .quote-icon,
+    .quote-content {
+      opacity: 0;
+    }
+
+    /* Layer order */
+    .quote-icon {
+      position: relative;
+      z-index: 2;
+    }
+
+    .quote-content {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Quotes Overlay -->
+  <div id="quotes-indicator" class="fixed left-16 right-16 hidden" style="top: 360px;">
+    <div class="quote-container flex rounded-lg border-2 border-radio-gold overflow-hidden bg-gradient-to-t from-radio-charcoal to-black">
+
+      <!-- Icon Section -->
+      <div class="quote-icon bg-radio-red flex items-center justify-center px-6 py-4">
+        <i class="fa-solid fa-quote-left text-white text-3xl"></i>
+      </div>
+
+      <!-- Quote Content -->
+      <div class="quote-content bg-gradient-to-t from-black to-radio-charcoal px-8 py-6">
+        <p id="quote-text" class="text-white text-3xl italic leading-relaxed mb-3">
+          La única forma de hacer un gran trabajo es amar lo que haces.
+        </p>
+        <p id="quote-author" class="text-radio-gold text-xl font-semibold">
+          — Steve Jobs
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../js/quotes-widget.js"></script>
+
+  <script>
+    // State
+    let currentQuoteIndex = 0
+    let intervalId = null
+    let previousConfig = null
+
+    // Default config
+    const DEFAULT_CONFIG = {
+      isVisible: false,
+      intervalSeconds: 20,
+      useLocalBank: true
+    }
+
+    // Load config from localStorage
+    function loadConfig() {
+      const saved = localStorage.getItem('quotesConfig')
+      if (saved) {
+        return JSON.parse(saved)
+      }
+      return DEFAULT_CONFIG
+    }
+
+    // Play entrance animation
+    function playEntranceAnimation() {
+      const container = document.querySelector('.quote-container')
+      const icon = document.querySelector('.quote-icon')
+      const content = document.querySelector('.quote-content')
+
+      // Remove exit animations
+      container.classList.remove('animate-exit')
+      icon.classList.remove('animate-exit')
+      content.classList.remove('animate-exit')
+
+      // Force reflow
+      void container.offsetWidth
+
+      // Apply entrance animations
+      container.classList.add('animate-entrance')
+      icon.classList.add('animate-entrance')
+      content.classList.add('animate-entrance')
+
+      console.log('🎬 Quote entrance animation started')
+    }
+
+    // Play exit animation
+    function playExitAnimation(callback) {
+      const container = document.querySelector('.quote-container')
+      const icon = document.querySelector('.quote-icon')
+      const content = document.querySelector('.quote-content')
+
+      // Remove entrance animations
+      container.classList.remove('animate-entrance')
+      icon.classList.remove('animate-entrance')
+      content.classList.remove('animate-entrance')
+
+      // Force reflow
+      void container.offsetWidth
+
+      // Apply exit animations
+      container.classList.add('animate-exit')
+      icon.classList.add('animate-exit')
+      content.classList.add('animate-exit')
+
+      console.log('🎬 Quote exit animation started')
+
+      // Call callback after animation completes (0.5s)
+      if (callback) {
+        setTimeout(callback, 500)
+      }
+    }
+
+    // Update quote with animation
+    function updateQuote(quote, author) {
+      const quoteText = document.getElementById('quote-text')
+      const quoteAuthor = document.getElementById('quote-author')
+
+      // Play exit animation
+      playExitAnimation(() => {
+        // Update text after fade out
+        quoteText.textContent = quote
+        quoteAuthor.textContent = `— ${author}`
+
+        // Play entrance animation
+        playEntranceAnimation()
+      })
+    }
+
+    // Next quote
+    function nextQuote() {
+      const quotes = QuotesWidget.getQuotes()
+
+      if (quotes.length === 0) {
+        console.log('💬 No quotes available')
+        return
+      }
+
+      // Update index
+      currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length
+
+      const quote = quotes[currentQuoteIndex]
+      updateQuote(quote.text, quote.author)
+
+      console.log(`💬 Showing quote ${currentQuoteIndex + 1}/${quotes.length}`)
+    }
+
+    // Start autoplay
+    function startAutoplay(intervalSeconds) {
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
+
+      intervalId = setInterval(() => {
+        nextQuote()
+      }, intervalSeconds * 1000)
+
+      console.log(`💬 Quotes autoplay started (${intervalSeconds}s interval)`)
+    }
+
+    // Stop autoplay
+    function stopAutoplay() {
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+        console.log('💬 Quotes autoplay stopped')
+      }
+    }
+
+    // Detect state change
+    function detectStateChange(prev, curr) {
+      if (prev === null) return true // First load
+
+      // Check if visibility changed
+      if (prev.isVisible !== curr.isVisible) return true
+
+      // Check if interval changed
+      if (prev.intervalSeconds !== curr.intervalSeconds) return true
+
+      return false
+    }
+
+    // Apply config
+    function applyConfig() {
+      const config = loadConfig()
+
+      // Detect if this is an actual state change
+      const isStateChange = detectStateChange(previousConfig, config)
+
+      if (!isStateChange && previousConfig !== null) {
+        return // Skip if polling with no change
+      }
+
+      const indicator = document.getElementById('quotes-indicator')
+
+      // Detect entrance transition
+      const wasHidden = !previousConfig || !previousConfig.isVisible
+      const isNowVisible = config.isVisible
+
+      // Handle visibility
+      if (isNowVisible) {
+        indicator.classList.remove('hidden')
+
+        // Play entrance animation if transitioning from hidden to visible
+        if (wasHidden) {
+          // Set initial quote
+          const quotes = QuotesWidget.getQuotes()
+          if (quotes.length > 0) {
+            const quote = quotes[0]
+            document.getElementById('quote-text').textContent = quote.text
+            document.getElementById('quote-author').textContent = `— ${quote.author}`
+          }
+
+          playEntranceAnimation()
+        }
+
+        startAutoplay(config.intervalSeconds)
+      } else {
+        indicator.classList.add('hidden')
+        stopAutoplay()
+      }
+
+      // Store current config as previous for next comparison
+      previousConfig = { ...config }
+
+      console.log('💬 Quotes overlay updated:', config)
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      applyConfig()
+    })
+
+    // Listen for storage events (cross-tab sync)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'quotesConfig') {
+        applyConfig()
+      }
+    })
+
+    // Polling for OBS compatibility (1 second)
+    setInterval(() => {
+      applyConfig()
+    }, 1000)
+  </script>
+
+</body>
+</html>

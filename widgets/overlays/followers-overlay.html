@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Followers Overlay</title>
+
+  <!-- Tailwind CSS v4 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'radio-red': '#FF3B3B',
+            'radio-gold': '#FFD700',
+            'radio-charcoal': '#2C2C2C',
+            'radio-wave': '#00D9FF',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts - Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Socket.io Client -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: transparent;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Animación de entrada: Pop + Rotate */
+    @keyframes popRotate {
+      0% {
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.2) rotate(10deg);
+      }
+      70% {
+        transform: scale(0.9) rotate(-5deg);
+      }
+      100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+
+    /* Animación de salida: Zoom out + fade */
+    @keyframes zoomOutFade {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+    }
+
+    .follower-container {
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    .follower-container.animate-in {
+      animation: popRotate 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+    }
+
+    .follower-container.animate-out {
+      animation: zoomOutFade 0.4s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+
+    /* Pulse animation para el corazón */
+    @keyframes heartBeat {
+      0%, 100% {
+        transform: scale(1);
+      }
+      10%, 30% {
+        transform: scale(1.2);
+      }
+      20%, 40% {
+        transform: scale(1.1);
+      }
+    }
+
+    .heart-beat {
+      animation: heartBeat 1.5s ease-in-out infinite;
+    }
+
+    /* Sparkle animation para estrellas */
+    @keyframes sparkle {
+      0%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+
+    .sparkle {
+      animation: sparkle 1s ease-in-out infinite;
+    }
+
+    .sparkle:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+
+    .sparkle:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Followers Container -->
+  <div class="fixed" style="top: 50%; left: 64px; right: 64px; transform: translateY(-50%);">
+    <div id="followers-queue">
+      <!-- Follower items will be added here -->
+    </div>
+  </div>
+
+  <script>
+    // Connect to Socket.io server with auto-reconnect
+    const socket = io('http://localhost:8080', {
+      reconnection: true,           // Habilitar reconexión automática
+      reconnectionAttempts: Infinity, // Intentos infinitos
+      reconnectionDelay: 1000,      // Esperar 1s antes de reconectar
+      reconnectionDelayMax: 5000,   // Máximo 5s entre intentos
+      timeout: 20000,               // Timeout de conexión 20s
+      transports: ['websocket', 'polling']
+    });
+
+    // Follower queue
+    let followerQueue = [];
+    let isShowing = false;
+
+    // Socket.io connection
+    socket.on('connect', () => {
+      console.log('✅ Conectado al servidor Socket.io (Followers)');
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log('🔄 Reconectado al servidor después de', attemptNumber, 'intentos');
+    });
+
+    socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log('🔄 Intento de reconexión #', attemptNumber);
+    });
+
+    socket.on('reconnect_error', (error) => {
+      console.log('❌ Error al reconectar:', error.message);
+    });
+
+    // Listen for new TikTok followers
+    socket.on('tiktok:follow', (data) => {
+      console.log('❤️ Nuevo seguidor:', data);
+      addFollower(data.username, data.nickname);
+    });
+
+    // Add follower to queue
+    function addFollower(username, nickname) {
+      const follower = {
+        username: username || 'Usuario',
+        nickname: nickname || username || 'Usuario',
+        timestamp: Date.now()
+      };
+
+      followerQueue.push(follower);
+
+      // Process queue if not currently showing a follower
+      if (!isShowing) {
+        processQueue();
+      }
+    }
+
+    // Process follower queue
+    function processQueue() {
+      if (followerQueue.length === 0) {
+        isShowing = false;
+        return;
+      }
+
+      isShowing = true;
+      const follower = followerQueue.shift();
+
+      showFollower(follower);
+    }
+
+    // Show follower alert
+    function showFollower(follower) {
+      const container = document.getElementById('followers-queue');
+
+      // Create follower element
+      const followerDiv = document.createElement('div');
+      followerDiv.className = 'follower-container';
+
+      followerDiv.innerHTML = `
+        <div class="relative">
+          <!-- Sparkles decoration -->
+          <div class="absolute -top-6 -left-6">
+            <i class="fa-solid fa-star text-radio-gold text-2xl sparkle"></i>
+          </div>
+          <div class="absolute -top-8 -right-4">
+            <i class="fa-solid fa-star text-radio-gold text-xl sparkle"></i>
+          </div>
+          <div class="absolute -bottom-6 -right-8">
+            <i class="fa-solid fa-star text-radio-gold text-2xl sparkle"></i>
+          </div>
+
+          <!-- Main badge -->
+          <div class="flex rounded-2xl border-4 border-radio-gold overflow-hidden bg-gradient-to-br from-radio-red via-red-600 to-radio-charcoal shadow-2xl w-full" style="border-width: 4px;">
+
+            <!-- Icon Section -->
+            <div class="bg-radio-gold flex items-center justify-center px-16 py-12" style="flex-shrink: 0;">
+              <i class="fa-solid fa-heart text-radio-red heart-beat" style="font-size: 8rem;"></i>
+            </div>
+
+            <!-- Content -->
+            <div class="bg-gradient-to-br from-radio-charcoal to-black px-16 py-12 flex items-center" style="flex: 1; min-width: 0;">
+              <div class="w-full">
+                <p class="text-radio-gold font-bold mb-3 uppercase tracking-wide" style="font-size: 2.5rem;">
+                  ¡Nuevo Seguidor!
+                </p>
+                <p class="text-white font-black mb-2" style="font-size: 3.5rem; word-break: break-word; line-height: 1.2;">
+                  @${escapeHtml(follower.username)}
+                </p>
+                <p class="text-radio-wave font-medium" style="font-size: 2rem;">
+                  ¡Gracias por el apoyo! 🎉
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      // Add to container
+      container.appendChild(followerDiv);
+
+      // Trigger entrance animation
+      setTimeout(() => {
+        followerDiv.classList.add('animate-in');
+      }, 50);
+
+      // Auto-remove after 6 seconds
+      setTimeout(() => {
+        // Trigger exit animation
+        followerDiv.classList.remove('animate-in');
+        followerDiv.classList.add('animate-out');
+
+        // Remove from DOM after animation
+        setTimeout(() => {
+          followerDiv.remove();
+
+          // Process next in queue
+          processQueue();
+        }, 400);
+      }, 6000);
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, (m) => map[m]);
+    }
+
+    // Handle Socket.io errors
+    socket.on('tiktok:error', (data) => {
+      console.error('❌ Error de TikTok:', data.message);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Desconectado del servidor');
+    });
+
+    // Test follower (for development)
+    // Uncomment to test without TikTok connection
+    // setTimeout(() => {
+    //   addFollower('testuser', 'Test User');
+    // }, 2000);
+  </script>
+
+</body>
+</html>

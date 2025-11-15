@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logo Overlay</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'radio-red': '#FF3B3B',
+            'radio-gold': '#FFD700',
+            'radio-charcoal': '#2C2C2C',
+            'radio-wave': '#00D9FF',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts - Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: transparent;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Animación de ondas de radio que se expanden */
+    @keyframes radioWave {
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 0;
+      }
+    }
+
+    .wave-inner {
+      animation: radioWave 2s ease-out infinite;
+    }
+
+    .wave-outer {
+      animation: radioWave 2s ease-out infinite;
+      animation-delay: 0.3s;
+    }
+
+    /* Entrance animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* Animation utility classes - staggered entrance sequence */
+    .animate-entrance-circle {
+      animation: fadeInScale 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) 0.2s both;
+    }
+
+    .animate-entrance-mic {
+      animation: fadeInScale 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) 0.4s both;
+    }
+
+    .animate-entrance-waves {
+      animation: fadeIn 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) 0.8s both;
+    }
+
+    /* Exit animation */
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    .animate-exit {
+      animation: fadeOut 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) forwards;
+    }
+
+    /* Text entrance/exit animations */
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+    }
+
+    .animate-text-entrance {
+      animation: slideInRight 0.6s cubic-bezier(0.25, 0.1, 0.25, 1.0) forwards;
+    }
+
+    .animate-text-exit {
+      animation: slideOutRight 0.4s cubic-bezier(0.25, 0.1, 0.25, 1.0) forwards;
+    }
+
+    /* Smooth transitions */
+    .logo-transition {
+      transition: transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+    }
+
+    #logo-container {
+      transition: opacity 0.5s ease-in-out;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Logo Overlay Container -->
+  <div
+    id="logo-container"
+    role="img"
+    aria-label="El Rincón del Che Carlitos Logo"
+    aria-hidden="true"
+    class="fixed"
+    style="right: 60px; top: 240px; opacity: 0;">
+
+    <!-- Logo con ondas y texto (moves left when text appears) -->
+    <div id="logo-content" class="flex items-center gap-4 logo-transition" style="transform: translateX(0);">
+
+      <!-- Logo gráfico -->
+      <div id="logo-graphic" class="flex items-center gap-3 opacity-0">
+
+        <!-- Ondas izquierda (antena) - crecientes -->
+        <div id="waves-left" class="flex items-center gap-1 opacity-0">
+          <span class="text-radio-wave wave-outer" style="font-size: 48px; font-weight: 300;">(</span>
+          <span class="text-radio-wave wave-inner" style="font-size: 32px; font-weight: 300;">(</span>
+        </div>
+
+        <!-- Micrófono -->
+        <i id="mic-icon" class="fa-solid fa-microphone text-radio-red opacity-0" style="font-size: 56px;"></i>
+
+        <!-- Ondas derecha (antena) - crecientes -->
+        <div id="waves-right" class="flex items-center gap-1 opacity-0">
+          <span class="text-radio-wave wave-inner" style="font-size: 32px; font-weight: 300;">)</span>
+          <span class="text-radio-wave wave-outer" style="font-size: 48px; font-weight: 300;">)</span>
+        </div>
+
+      </div>
+
+      <!-- Texto del logo -->
+      <div id="logo-text" class="opacity-0" aria-hidden="true">
+        <div class="text-white font-light tracking-widest" style="font-size: 14px; letter-spacing: 3px;">
+          EL RINCÓN DEL
+        </div>
+        <div class="text-radio-gold font-bold mt-1" style="font-size: 32px; line-height: 1;">
+          Che Carlitos
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // State Transition Manager
+    let previousConfig = null
+
+    // Config default
+    const DEFAULT_CONFIG = {
+      isVisible: true,
+      showText: false
+    }
+
+    // Load config from localStorage
+    function loadConfig() {
+      const saved = localStorage.getItem('obs-logo-config')
+      if (saved) {
+        return JSON.parse(saved)
+      }
+      return DEFAULT_CONFIG
+    }
+
+    // Detect if state actually changed
+    function detectStateChange(prev, curr) {
+      if (prev === null) return true // First load
+      return prev.isVisible !== curr.isVisible || prev.showText !== curr.showText
+    }
+
+    // Play entrance animation sequence (staggered reveal)
+    function playEntranceAnimation() {
+      const logoGraphic = document.getElementById('logo-graphic')
+      const micIcon = document.getElementById('mic-icon')
+      const wavesLeft = document.getElementById('waves-left')
+      const wavesRight = document.getElementById('waves-right')
+
+      // Remove any existing animation classes
+      const elements = [logoGraphic, micIcon, wavesLeft, wavesRight]
+      elements.forEach(el => {
+        el.classList.remove('animate-entrance-circle', 'animate-entrance-mic', 'animate-entrance-waves', 'animate-exit')
+      })
+
+      // Force reflow to restart animations
+      void logoGraphic.offsetWidth
+
+      // Apply staggered entrance animations
+      logoGraphic.classList.add('animate-entrance-circle')
+      micIcon.classList.add('animate-entrance-mic')
+      wavesLeft.classList.add('animate-entrance-waves')
+      wavesRight.classList.add('animate-entrance-waves')
+
+      console.log('🎬 Logo entrance animation started')
+    }
+
+    // Hide logo with exit animation
+    function hideLogoWithExit() {
+      const container = document.getElementById('logo-container')
+      const logoGraphic = document.getElementById('logo-graphic')
+      const micIcon = document.getElementById('mic-icon')
+      const wavesLeft = document.getElementById('waves-left')
+      const wavesRight = document.getElementById('waves-right')
+      const logoText = document.getElementById('logo-text')
+
+      // Hide text if visible
+      if (logoText.style.opacity !== '0') {
+        hideLogoText()
+      }
+
+      // Apply exit animation to all logo layers
+      const elements = [logoGraphic, micIcon, wavesLeft, wavesRight]
+      elements.forEach(el => {
+        el.classList.remove('animate-entrance-circle', 'animate-entrance-mic', 'animate-entrance-waves')
+        el.classList.add('animate-exit')
+      })
+
+      // Hide container after animation completes
+      setTimeout(() => {
+        container.style.opacity = '0'
+      }, 500)
+
+      console.log('🎬 Logo exit animation started')
+    }
+
+    // Show logo only (no text) - with optional entrance animation
+    function showLogoOnly(shouldAnimate = false) {
+      const container = document.getElementById('logo-container')
+      const logoContent = document.getElementById('logo-content')
+
+      container.style.opacity = '1'
+      logoContent.style.transform = 'translateX(0)'
+
+      // Hide text
+      hideLogoText()
+
+      // Trigger entrance animation if this is a state transition
+      if (shouldAnimate) {
+        playEntranceAnimation()
+      }
+    }
+
+    // Show logo with text - with optional entrance animation
+    function showLogoWithText(shouldAnimate = false) {
+      const container = document.getElementById('logo-container')
+      const logoContent = document.getElementById('logo-content')
+
+      container.style.opacity = '1'
+
+      // Trigger entrance animation if this is a state transition
+      if (shouldAnimate) {
+        playEntranceAnimation()
+      }
+
+      // Show text immediately (it's part of the same flex container now)
+      setTimeout(() => {
+        showLogoTextWithAnimation()
+      }, shouldAnimate ? 1300 : 50)
+    }
+
+    // Show text with entrance animation
+    function showLogoTextWithAnimation() {
+      const logoText = document.getElementById('logo-text')
+
+      // Remove exit animation if present
+      logoText.classList.remove('animate-text-exit')
+
+      // Force reflow
+      void logoText.offsetWidth
+
+      // Apply entrance animation
+      logoText.classList.add('animate-text-entrance')
+      logoText.style.opacity = '1'
+    }
+
+    // Hide text with exit animation
+    function hideLogoText() {
+      const logoText = document.getElementById('logo-text')
+
+      // Remove entrance animation if present
+      logoText.classList.remove('animate-text-entrance')
+
+      // Force reflow
+      void logoText.offsetWidth
+
+      // Apply exit animation
+      logoText.classList.add('animate-text-exit')
+
+      // Set opacity to 0 after animation completes
+      setTimeout(() => {
+        logoText.style.opacity = '0'
+      }, 400)
+    }
+
+    // Apply config to overlay
+    function applyConfig(config) {
+      // Detect if this is an actual state change
+      const isStateChange = detectStateChange(previousConfig, config)
+
+      if (!isStateChange && previousConfig !== null) {
+        return // Skip if polling with no change
+      }
+
+      const container = document.getElementById('logo-container')
+
+      // Update aria-hidden attribute based on visibility
+      container.setAttribute('aria-hidden', !config.isVisible ? 'true' : 'false')
+
+      // Check visibility first
+      if (!config.isVisible) {
+        hideLogoWithExit()
+        previousConfig = { ...config }
+        return
+      }
+
+      // Detect entrance transition
+      const wasHidden = !previousConfig || !previousConfig.isVisible
+      const isNowVisible = config.isVisible
+
+      // Show logo with or without text
+      if (config.showText) {
+        showLogoWithText(wasHidden && isNowVisible)
+      } else {
+        showLogoOnly(wasHidden && isNowVisible)
+      }
+
+      // Store current config as previous for next comparison
+      previousConfig = { ...config }
+
+      console.log('📺 Logo overlay updated:', config, 'wasHidden:', wasHidden)
+    }
+
+    // Listen for storage changes
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'obs-logo-config') {
+        const config = loadConfig()
+        applyConfig(config)
+      }
+    })
+
+    // Polling fallback (OBS compatibility)
+    setInterval(() => {
+      const config = loadConfig()
+      applyConfig(config)
+    }, 1000)
+
+    // Apply initial config
+    window.addEventListener('DOMContentLoaded', () => {
+      const config = loadConfig()
+      applyConfig(config)
+    })
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Greetings Overlay</title>
+
+  <!-- Tailwind CSS v4 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'radio-red': '#FF3B3B',
+            'radio-gold': '#FFD700',
+            'radio-charcoal': '#2C2C2C',
+            'radio-wave': '#00D9FF',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
+
+  <!-- Google Fonts - Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Socket.io Client -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: transparent;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Animación de entrada: slide down + bounce */
+    @keyframes slideDownBounce {
+      0% {
+        transform: translateY(-150%) scale(0.8);
+        opacity: 0;
+      }
+      60% {
+        transform: translateY(10%) scale(1.05);
+        opacity: 1;
+      }
+      80% {
+        transform: translateY(-5%) scale(0.95);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Animación de salida: slide up + fade */
+    @keyframes slideUpFade {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-150%) scale(0.8);
+        opacity: 0;
+      }
+    }
+
+    .greeting-container {
+      opacity: 0;
+      transform: translateY(-150%);
+    }
+
+    .greeting-container.animate-in {
+      animation: slideDownBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .greeting-container.animate-out {
+      animation: slideUpFade 0.5s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+
+    /* Glow animation para el icono */
+    @keyframes glow {
+      0%, 100% {
+        filter: drop-shadow(0 0 10px #FFD700);
+      }
+      50% {
+        filter: drop-shadow(0 0 20px #FFD700) drop-shadow(0 0 30px #FFD700);
+      }
+    }
+
+    /* Wave (saludo) animation para la mano */
+    @keyframes wave {
+      0%, 100% {
+        transform: rotate(0deg);
+      }
+      10%, 30% {
+        transform: rotate(14deg);
+      }
+      20%, 40% {
+        transform: rotate(-8deg);
+      }
+      50% {
+        transform: rotate(14deg);
+      }
+      60% {
+        transform: rotate(-4deg);
+      }
+      70% {
+        transform: rotate(10deg);
+      }
+      80% {
+        transform: rotate(0deg);
+      }
+    }
+
+    .icon-glow {
+      animation: glow 2s ease-in-out infinite;
+      display: inline-block;
+      transform-origin: 70% 70%;
+    }
+
+    .icon-wave {
+      animation: wave 2s ease-in-out infinite;
+      display: inline-block;
+      transform-origin: 70% 70%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Greetings Container -->
+  <div class="fixed" style="top: 50%; left: 64px; right: 64px; transform: translateY(-50%);">
+    <div id="greetings-queue">
+      <!-- Greeting items will be added here -->
+    </div>
+  </div>
+
+  <script>
+    // Connect to Socket.io server with auto-reconnect
+    const socket = io('http://localhost:8080', {
+      reconnection: true,           // Habilitar reconexión automática
+      reconnectionAttempts: Infinity, // Intentos infinitos
+      reconnectionDelay: 1000,      // Esperar 1s antes de reconectar
+      reconnectionDelayMax: 5000,   // Máximo 5s entre intentos
+      timeout: 20000,               // Timeout de conexión 20s
+      transports: ['websocket', 'polling']
+    });
+
+    // Greeting queue
+    let greetingQueue = [];
+    let isShowing = false;
+
+    // Socket.io connection
+    socket.on('connect', () => {
+      console.log('✅ Conectado al servidor Socket.io (Greetings)');
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log('🔄 Reconectado al servidor después de', attemptNumber, 'intentos');
+    });
+
+    socket.on('reconnect_attempt', (attemptNumber) => {
+      console.log('🔄 Intento de reconexión #', attemptNumber);
+    });
+
+    socket.on('reconnect_error', (error) => {
+      console.log('❌ Error al reconectar:', error.message);
+    });
+
+    // Listen for new TikTok members
+    socket.on('tiktok:member', (data) => {
+      console.log('👤 [GREETINGS] Evento tiktok:member recibido:', data);
+      addGreeting(data.username, data.nickname);
+    });
+
+    // DEBUG: Log all socket events
+    socket.onAny((eventName, ...args) => {
+      console.log('🔔 [GREETINGS] Evento recibido:', eventName, args);
+    });
+
+    // Add greeting to queue
+    function addGreeting(username, nickname) {
+      const greeting = {
+        username: username || 'Usuario',
+        nickname: nickname || username || 'Usuario',
+        timestamp: Date.now()
+      };
+
+      greetingQueue.push(greeting);
+
+      // Process queue if not currently showing a greeting
+      if (!isShowing) {
+        processQueue();
+      }
+    }
+
+    // Process greeting queue
+    function processQueue() {
+      if (greetingQueue.length === 0) {
+        isShowing = false;
+        return;
+      }
+
+      isShowing = true;
+      const greeting = greetingQueue.shift();
+
+      showGreeting(greeting);
+    }
+
+    // Show greeting
+    function showGreeting(greeting) {
+      const container = document.getElementById('greetings-queue');
+
+      // Create greeting element
+      const greetingDiv = document.createElement('div');
+      greetingDiv.className = 'greeting-container';
+
+      greetingDiv.innerHTML = `
+        <div class="flex rounded-2xl border-4 border-radio-gold overflow-hidden bg-gradient-to-t from-radio-charcoal to-black shadow-2xl w-full" style="border-width: 4px;">
+          <!-- Icon Section -->
+          <div class="bg-radio-red flex items-center justify-center px-16 py-12" style="flex-shrink: 0;">
+            <i class="fa-regular fa-hand text-radio-gold icon-wave" style="font-size: 8rem;"></i>
+          </div>
+
+          <!-- Greeting Content -->
+          <div class="bg-gradient-to-t from-black to-radio-charcoal px-16 py-12 flex items-center" style="flex: 1; min-width: 0;">
+            <div class="w-full">
+              <p class="text-white font-bold mb-3" style="font-size: 3.5rem; word-break: break-word; line-height: 1.2;">
+                ¡Hola <span class="text-radio-gold">@${escapeHtml(greeting.username)}</span>!
+              </p>
+              <p class="text-radio-wave font-medium" style="font-size: 2rem;">
+                Bienvenid@ al live
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Add to container
+      container.appendChild(greetingDiv);
+
+      // Trigger entrance animation
+      setTimeout(() => {
+        greetingDiv.classList.add('animate-in');
+      }, 50);
+
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        // Trigger exit animation
+        greetingDiv.classList.remove('animate-in');
+        greetingDiv.classList.add('animate-out');
+
+        // Remove from DOM after animation
+        setTimeout(() => {
+          greetingDiv.remove();
+
+          // Process next in queue
+          processQueue();
+        }, 500);
+      }, 5000);
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, (m) => map[m]);
+    }
+
+    // Handle Socket.io errors
+    socket.on('tiktok:error', (data) => {
+      console.error('❌ Error de TikTok:', data.message);
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Desconectado del servidor');
+    });
+
+    // Test greeting (for development)
+    // Uncomment to test without TikTok connection
+    // setTimeout(() => {
+    //   addGreeting('testuser', 'Test User');
+    // }, 2000);
+  </script>
+
+</body>
+</html>

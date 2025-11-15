@@ -20,5 +20,9 @@
   "license": "MIT",
   "engines": {
     "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "socket.io": "^4.8.1",
+    "tiktok-live-connector": "^2.1.0"
   }
 }

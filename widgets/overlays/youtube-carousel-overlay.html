@@ -66,46 +66,125 @@
       border: none;
     }
 
-    /* Badge de ubicación - Glassmorphism */
+    /* Badge de ubicación - Estilo LIVE */
     .location-indicator {
       position: fixed;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 16px;
-      padding: 20px 40px;
-      text-align: center;
+      top: 240px;
+      left: 60px;
       z-index: 40;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-      transition: opacity 0.5s ease-in-out;
     }
 
-    .location-indicator.fade-out {
+    /* Animaciones de entrada */
+
+    /* Step 1: Border zoom in */
+    @keyframes zoom-in-border {
+      from {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Step 2: DESDE slide from left */
+    @keyframes slide-in-label {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Step 3: Location slide from left */
+    @keyframes slide-in-text {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Animaciones de salida (fade out) */
+    @keyframes fade-out {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+
+    /* Apply entrance animations - Sequential timing */
+    .badge-container.animate-entrance {
+      animation: zoom-in-border 0.4s cubic-bezier(0.25, 0.1, 0.25, 1.0) forwards;
+    }
+
+    .badge-label.animate-entrance {
+      animation: slide-in-label 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) 0.4s forwards;
+    }
+
+    .badge-text.animate-entrance {
+      animation: slide-in-text 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) 0.9s forwards;
+    }
+
+    /* Apply exit animations */
+    .badge-container.animate-exit,
+    .badge-label.animate-exit,
+    .badge-text.animate-exit {
+      animation: fade-out 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0) forwards;
+    }
+
+    /* Initial state - hidden */
+    .badge-container,
+    .badge-label,
+    .badge-text {
       opacity: 0;
     }
 
-    .location-indicator .line1 {
-      font-family: 'Poppins', sans-serif;
-      font-size: 18px;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.9);
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    /* Layer order */
+    .badge-label {
+      position: relative;
+      z-index: 2;
     }
 
-    .location-indicator .line2 {
-      font-family: 'Poppins', sans-serif;
-      font-size: 36px;
-      font-weight: 700;
+    .badge-text {
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge-container {
+      display: flex;
+      border-radius: 0.5rem;
+      border: 2px solid #FFD700;
+      overflow: hidden;
+      background: linear-gradient(to top, #2C2C2C, #000000);
+    }
+
+    .badge-label {
+      background: #FF3B3B;
       color: #ffffff;
-      margin-top: 6px;
-      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
-      letter-spacing: 1px;
+      padding: 0.5rem 2rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge-text {
+      background: linear-gradient(to top, #000000, #2C2C2C);
+      color: #ffffff;
+      padding: 0.5rem 2rem;
+      font-size: 1.5rem;
+      white-space: nowrap;
+      font-family: 'Poppins', sans-serif;
     }
   </style>
 
@@ -118,8 +197,10 @@
 
   <!-- Location Badge -->
   <div id="location-indicator" class="location-indicator hidden">
-    <div class="line1">DESDE</div>
-    <div class="line2" id="location-text">YouTube</div>
+    <div class="badge-container">
+      <span class="badge-label">DESDE</span>
+      <span class="badge-text" id="location-text">YouTube</span>
+    </div>
   </div>
 
   <!-- YouTube Carousel -->
@@ -222,19 +303,67 @@
       console.log(`📺 YouTube Carousel: Transitioned to slide ${currentIndex + 1}/${slides.length}`)
     }
 
-    // Update location text
+    // Play entrance animation
+    function playEntranceAnimation() {
+      const badgeContainer = document.querySelector('.badge-container')
+      const badgeLabel = document.querySelector('.badge-label')
+      const badgeText = document.querySelector('.badge-text')
+
+      // Remove exit animations
+      badgeContainer.classList.remove('animate-exit')
+      badgeLabel.classList.remove('animate-exit')
+      badgeText.classList.remove('animate-exit')
+
+      // Force reflow to restart animation
+      void badgeContainer.offsetWidth
+
+      // Apply entrance animations
+      badgeContainer.classList.add('animate-entrance')
+      badgeLabel.classList.add('animate-entrance')
+      badgeText.classList.add('animate-entrance')
+
+      console.log('🎬 Badge entrance animation started')
+    }
+
+    // Play exit animation
+    function playExitAnimation(callback) {
+      const badgeContainer = document.querySelector('.badge-container')
+      const badgeLabel = document.querySelector('.badge-label')
+      const badgeText = document.querySelector('.badge-text')
+
+      // Remove entrance animations
+      badgeContainer.classList.remove('animate-entrance')
+      badgeLabel.classList.remove('animate-entrance')
+      badgeText.classList.remove('animate-entrance')
+
+      // Force reflow
+      void badgeContainer.offsetWidth
+
+      // Apply exit animations
+      badgeContainer.classList.add('animate-exit')
+      badgeLabel.classList.add('animate-exit')
+      badgeText.classList.add('animate-exit')
+
+      console.log('🎬 Badge exit animation started')
+
+      // Call callback after animation completes (0.5s)
+      if (callback) {
+        setTimeout(callback, 500)
+      }
+    }
+
+    // Update location text with animation cycle
     function updateLocation(newLocation) {
-      const indicator = document.getElementById('location-indicator')
       const locationText = document.getElementById('location-text')
 
-      // Fade out
-      indicator.classList.add('fade-out')
-
-      // Update text after fade out
-      setTimeout(() => {
+      // Play exit animation
+      playExitAnimation(() => {
+        // Update text after fade out
         locationText.textContent = newLocation || 'YouTube'
-        indicator.classList.remove('fade-out')
-      }, 500)
+
+        // Play entrance animation
+        playEntranceAnimation()
+      })
     }
 
     // Start autoplay
@@ -294,8 +423,12 @@
       const carousel = document.getElementById('youtube-carousel')
       const indicator = document.getElementById('location-indicator')
 
+      // Detect entrance transition (false → true or initial load)
+      const wasHidden = !previousConfig || !previousConfig.isVisible
+      const isNowVisible = config.isVisible && config.videos.length > 0
+
       // Handle visibility
-      if (config.isVisible && config.videos.length > 0) {
+      if (isNowVisible) {
         // Rebuild carousel if videos changed
         if (isStateChange) {
           buildCarousel(config)
@@ -303,6 +436,12 @@
 
         carousel.classList.remove('hidden')
         indicator.classList.remove('hidden')
+
+        // Play entrance animation if transitioning from hidden to visible
+        if (wasHidden) {
+          playEntranceAnimation()
+        }
+
         startAutoplay(config.intervalSeconds)
       } else {
         carousel.classList.add('hidden')
