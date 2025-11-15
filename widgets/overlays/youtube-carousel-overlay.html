@@ -3,33 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube Carousel Overlay - El Rincón del Che Carlitos</title>
+  <title>YouTube Carousel Overlay</title>
 
   <!-- Tailwind CSS v4 -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Google Fonts - Poppins -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            'radio-red': '#FF3B3B',
-            'radio-gold': '#FFD700',
-            'radio-charcoal': '#2C2C2C',
-            'radio-silver': '#C0C0C0',
             'radio-wave': '#00D9FF',
-            'radio-amber': '#FFBF00',
-            'radio-slate': '#4A4A4A',
-            'radio-cream': '#F5F5DC',
-          },
-          fontFamily: {
-            'poppins': ['Poppins', 'sans-serif'],
-          },
+          }
         }
       }
     }
@@ -43,46 +28,47 @@
     }
 
     body {
-      font-family: 'Poppins', sans-serif;
       overflow: hidden;
+      background: #000000;
     }
 
     /* Container de 9:16 (1080x1920) */
-    #overlay-container {
+    #youtube-carousel {
+      position: relative;
       width: 1080px;
       height: 1920px;
-      position: relative;
       background: #000000;
       overflow: hidden;
     }
 
-    /* Video iframe centrado (16:9 en pantalla 9:16) */
-    .video-wrapper {
+    /* Slides de video */
+    .youtube-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    .youtube-slide.active {
+      opacity: 1;
+    }
+
+    .youtube-slide iframe {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 1920px;  /* Ancho original del video 16:9 */
-      height: 1080px; /* Altura original del video 16:9 */
-      opacity: 0;
-      transition: opacity 0.8s ease-in-out;
-      pointer-events: none;
-    }
-
-    .video-wrapper.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .video-wrapper iframe {
-      width: 100%;
-      height: 100%;
+      width: 1920px;  /* 16:9 width para llenar altura */
+      height: 1080px; /* 16:9 height */
       border: none;
     }
 
-    /* Badge superior con efecto glow */
-    #location-badge {
-      position: absolute;
+    /* Badge de ubicación */
+    .location-indicator {
+      position: fixed;
       top: 80px;
       left: 50%;
       transform: translateX(-50%);
@@ -92,17 +78,17 @@
       border-radius: 12px;
       padding: 16px 32px;
       text-align: center;
-      z-index: 10;
+      z-index: 40;
       box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
-      opacity: 0;
       transition: opacity 0.5s ease-in-out;
     }
 
-    #location-badge.visible {
-      opacity: 1;
+    .location-indicator.fade-out {
+      opacity: 0;
     }
 
-    #location-badge .line1 {
+    .location-indicator .line1 {
+      font-family: 'Poppins', sans-serif;
       font-size: 20px;
       font-weight: 500;
       color: #00D9FF;
@@ -110,7 +96,8 @@
       text-transform: uppercase;
     }
 
-    #location-badge .line2 {
+    .location-indicator .line2 {
+      font-family: 'Poppins', sans-serif;
       font-size: 32px;
       font-weight: 700;
       color: #00D9FF;
@@ -118,7 +105,7 @@
       text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
     }
 
-    /* Animación de glow para el badge */
+    /* Animación de glow */
     @keyframes glowPulse {
       0%, 100% {
         box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
@@ -128,238 +115,234 @@
       }
     }
 
-    #location-badge.visible {
+    .location-indicator {
       animation: glowPulse 3s ease-in-out infinite;
     }
   </style>
+
+  <!-- Google Fonts - Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <div id="overlay-container">
-    <!-- Badge de ubicación -->
-    <div id="location-badge">
-      <div class="line1">DESDE</div>
-      <div class="line2" id="location-text">YouTube</div>
-    </div>
-
-    <!-- Contenedores de videos (carrusel) -->
-    <div id="video-carousel"></div>
+  <!-- Location Badge -->
+  <div id="location-indicator" class="location-indicator hidden">
+    <div class="line1">DESDE</div>
+    <div class="line2" id="location-text">YouTube</div>
   </div>
 
-  <!-- YouTube iframe API -->
-  <script src="https://www.youtube.com/iframe_api"></script>
+  <!-- YouTube Carousel -->
+  <div id="youtube-carousel" class="hidden"></div>
 
-  <!-- Widget logic -->
   <script src="../js/youtube-carousel-widget.js"></script>
 
   <script>
-    // Configuración por defecto
+    // Default configs
     const DEFAULT_CONFIG = {
       isVisible: false,
       intervalSeconds: 30,
       videos: [],
       currentIndex: 0
-    };
+    }
 
-    let config = { ...DEFAULT_CONFIG };
-    let players = [];
-    let currentPlayer = null;
-    let rotationTimer = null;
+    // State
+    let slides = []
+    let currentIndex = 0
+    let intervalId = null
+    let previousConfig = null
 
-    // Cargar configuración desde localStorage
+    // Load config from localStorage
     function loadConfig() {
-      try {
-        const saved = localStorage.getItem('youtubeCarouselConfig');
-        if (saved) {
-          config = { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
-        }
-      } catch (err) {
-        console.error('Error loading config:', err);
+      const saved = localStorage.getItem('youtubeCarouselConfig')
+      if (saved) {
+        return JSON.parse(saved)
       }
-      applyConfig();
+      return DEFAULT_CONFIG
     }
 
-    // Aplicar configuración
+    // Create video slide
+    function createVideoSlide(video, index) {
+      const slide = document.createElement('div')
+      slide.className = 'youtube-slide'
+      if (index === 0) {
+        slide.classList.add('active')
+      }
+
+      const iframe = document.createElement('iframe')
+      iframe.src = `https://www.youtube-nocookie.com/embed/${video.videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${video.videoId}&modestbranding=1&playsinline=1&rel=0&showinfo=0`
+      iframe.allow = 'autoplay; encrypted-media'
+      iframe.loading = 'lazy'
+
+      slide.appendChild(iframe)
+      return slide
+    }
+
+    // Build carousel
+    function buildCarousel(config) {
+      const carousel = document.getElementById('youtube-carousel')
+
+      // Clear existing slides
+      carousel.innerHTML = ''
+      slides = []
+
+      // Filter enabled videos
+      const enabledVideos = config.videos.filter(v => v.isEnabled !== false)
+
+      if (enabledVideos.length === 0) {
+        console.log('📺 YouTube Carousel: No enabled videos')
+        return
+      }
+
+      // Create slides
+      enabledVideos.forEach((video, index) => {
+        const slide = createVideoSlide(video, index)
+        carousel.appendChild(slide)
+        slides.push(slide)
+      })
+
+      // Reset to first slide
+      currentIndex = 0
+      updateLocation(enabledVideos[0].location || '')
+
+      console.log(`📺 YouTube Carousel: Built with ${slides.length} videos`)
+    }
+
+    // Next slide
+    function nextSlide() {
+      const config = loadConfig()
+      const enabledVideos = config.videos.filter(v => v.isEnabled !== false)
+
+      if (slides.length === 0 || enabledVideos.length === 0) return
+
+      // Fade out current
+      slides[currentIndex].classList.remove('active')
+
+      // Update index
+      currentIndex = (currentIndex + 1) % slides.length
+
+      // Update location with fade
+      updateLocation(enabledVideos[currentIndex].location || '')
+
+      // Fade in next
+      setTimeout(() => {
+        slides[currentIndex].classList.add('active')
+      }, 100)
+
+      console.log(`📺 YouTube Carousel: Transitioned to slide ${currentIndex + 1}/${slides.length}`)
+    }
+
+    // Update location text
+    function updateLocation(newLocation) {
+      const indicator = document.getElementById('location-indicator')
+      const locationText = document.getElementById('location-text')
+
+      // Fade out
+      indicator.classList.add('fade-out')
+
+      // Update text after fade out
+      setTimeout(() => {
+        locationText.textContent = newLocation || 'YouTube'
+        indicator.classList.remove('fade-out')
+      }, 500)
+    }
+
+    // Start autoplay
+    function startAutoplay(intervalSeconds) {
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
+
+      if (slides.length <= 1) {
+        console.log('📺 YouTube Carousel: Only 1 video, autoplay disabled')
+        return
+      }
+
+      intervalId = setInterval(() => {
+        nextSlide()
+      }, intervalSeconds * 1000)
+
+      console.log(`📺 YouTube Carousel: Autoplay started (${intervalSeconds}s interval)`)
+    }
+
+    // Stop autoplay
+    function stopAutoplay() {
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+        console.log('📺 YouTube Carousel: Autoplay stopped')
+      }
+    }
+
+    // Detect state change
+    function detectStateChange(prev, curr) {
+      if (prev === null) return true // First load
+
+      // Check if visibility changed
+      if (prev.isVisible !== curr.isVisible) return true
+
+      // Check if video list changed
+      if (JSON.stringify(prev.videos) !== JSON.stringify(curr.videos)) return true
+
+      // Check if interval changed
+      if (prev.intervalSeconds !== curr.intervalSeconds) return true
+
+      return false
+    }
+
+    // Apply config
     function applyConfig() {
-      const badge = document.getElementById('location-badge');
+      const config = loadConfig()
 
-      // Mostrar/ocultar todo el overlay
-      if (config.isVisible && config.videos && config.videos.length > 0) {
-        badge.classList.add('visible');
-        updateCarousel();
-      } else {
-        badge.classList.remove('visible');
-      }
-    }
+      // Detect if this is an actual state change
+      const isStateChange = detectStateChange(previousConfig, config)
 
-    // Actualizar carrusel de videos
-    function updateCarousel() {
-      const carousel = document.getElementById('video-carousel');
-      carousel.innerHTML = '';
-
-      if (!config.videos || config.videos.length === 0) {
-        return;
+      if (!isStateChange && previousConfig !== null) {
+        return // Skip if polling with no change
       }
 
-      // Crear wrappers para cada video
-      config.videos.forEach((video, index) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'video-wrapper';
-        wrapper.id = `video-wrapper-${index}`;
+      const carousel = document.getElementById('youtube-carousel')
+      const indicator = document.getElementById('location-indicator')
 
-        const iframe = document.createElement('div');
-        iframe.id = `player-${index}`;
-
-        wrapper.appendChild(iframe);
-        carousel.appendChild(wrapper);
-      });
-
-      // Inicializar players cuando la API esté lista
-      if (window.YT && window.YT.Player) {
-        initPlayers();
-      }
-    }
-
-    // Inicializar YouTube players
-    function initPlayers() {
-      players = [];
-
-      config.videos.forEach((video, index) => {
-        const player = new YT.Player(`player-${index}`, {
-          videoId: video.videoId,
-          playerVars: {
-            autoplay: 0,
-            controls: 0,
-            modestbranding: 1,
-            rel: 0,
-            showinfo: 0,
-            fs: 0,
-            playsinline: 1,
-            mute: 1
-          },
-          events: {
-            onReady: (event) => {
-              players[index] = event.target;
-              if (index === config.currentIndex && config.isVisible) {
-                showVideo(index);
-              }
-            },
-            onStateChange: (event) => {
-              if (event.data === YT.PlayerState.ENDED) {
-                nextVideo();
-              }
-            }
-          }
-        });
-      });
-    }
-
-    // Mostrar video específico
-    function showVideo(index) {
-      if (index < 0 || index >= config.videos.length) return;
-
-      const video = config.videos[index];
-
-      // Si el video está deshabilitado, saltar al siguiente
-      if (video.isEnabled === false) {
-        nextVideo();
-        return;
-      }
-
-      // Ocultar todos los videos
-      document.querySelectorAll('.video-wrapper').forEach(wrapper => {
-        wrapper.classList.remove('active');
-      });
-
-      // Pausar todos los players
-      players.forEach(player => {
-        if (player && player.pauseVideo) {
-          player.pauseVideo();
+      // Handle visibility
+      if (config.isVisible && config.videos.length > 0) {
+        // Rebuild carousel if videos changed
+        if (isStateChange) {
+          buildCarousel(config)
         }
-      });
 
-      // Actualizar badge con ubicación del video actual
-      const locationText = document.getElementById('location-text');
-      locationText.textContent = video.location || 'YouTube';
-
-      // Mostrar y reproducir el video actual
-      const wrapper = document.getElementById(`video-wrapper-${index}`);
-      if (wrapper) {
-        wrapper.classList.add('active');
+        carousel.classList.remove('hidden')
+        indicator.classList.remove('hidden')
+        startAutoplay(config.intervalSeconds)
+      } else {
+        carousel.classList.add('hidden')
+        indicator.classList.add('hidden')
+        stopAutoplay()
       }
 
-      if (players[index] && players[index].playVideo) {
-        players[index].playVideo();
-        currentPlayer = players[index];
-      }
+      // Store current config as previous for next comparison
+      previousConfig = { ...config }
 
-      config.currentIndex = index;
-
-      // Configurar timer para rotación automática
-      clearTimeout(rotationTimer);
-      rotationTimer = setTimeout(() => {
-        nextVideo();
-      }, config.intervalSeconds * 1000);
+      console.log('📺 YouTube Carousel overlay updated:', config)
     }
 
-    // Siguiente video (solo habilitados)
-    function nextVideo() {
-      const enabledVideos = config.videos.filter(v => v.isEnabled !== false);
-      if (enabledVideos.length === 0) return;
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      applyConfig()
+    })
 
-      let nextIndex = (config.currentIndex + 1) % config.videos.length;
-      let attempts = 0;
-
-      while (config.videos[nextIndex].isEnabled === false && attempts < config.videos.length) {
-        nextIndex = (nextIndex + 1) % config.videos.length;
-        attempts++;
-      }
-
-      showVideo(nextIndex);
-    }
-
-    // Anterior video (solo habilitados)
-    function previousVideo() {
-      const enabledVideos = config.videos.filter(v => v.isEnabled !== false);
-      if (enabledVideos.length === 0) return;
-
-      let prevIndex = (config.currentIndex - 1 + config.videos.length) % config.videos.length;
-      let attempts = 0;
-
-      while (config.videos[prevIndex].isEnabled === false && attempts < config.videos.length) {
-        prevIndex = (prevIndex - 1 + config.videos.length) % config.videos.length;
-        attempts++;
-      }
-
-      showVideo(prevIndex);
-    }
-
-    // Callback cuando YouTube API esté lista
-    function onYouTubeIframeAPIReady() {
-      initPlayers();
-    }
-
-    // Escuchar cambios en localStorage
+    // Listen for storage events (cross-tab sync)
     window.addEventListener('storage', (e) => {
       if (e.key === 'youtubeCarouselConfig') {
-        loadConfig();
+        applyConfig()
       }
-    });
+    })
 
-    // Polling para sincronización (OBS compatibility)
+    // Polling for OBS compatibility (1 second)
     setInterval(() => {
-      const saved = localStorage.getItem('youtubeCarouselConfig');
-      if (saved) {
-        const newConfig = JSON.parse(saved);
-        if (JSON.stringify(newConfig) !== JSON.stringify(config)) {
-          config = { ...DEFAULT_CONFIG, ...newConfig };
-          applyConfig();
-        }
-      }
-    }, 1000);
-
-    // Cargar configuración inicial
-    loadConfig();
+      applyConfig()
+    }, 1000)
   </script>
 
 </body>
