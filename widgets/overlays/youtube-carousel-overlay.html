@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Carousel Overlay - El Rincón del Che Carlitos</title>
+
+  <!-- Tailwind CSS v4 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts - Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'radio-red': '#FF3B3B',
+            'radio-gold': '#FFD700',
+            'radio-charcoal': '#2C2C2C',
+            'radio-silver': '#C0C0C0',
+            'radio-wave': '#00D9FF',
+            'radio-amber': '#FFBF00',
+            'radio-slate': '#4A4A4A',
+            'radio-cream': '#F5F5DC',
+          },
+          fontFamily: {
+            'poppins': ['Poppins', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+    }
+
+    /* Container de 9:16 (1080x1920) */
+    #overlay-container {
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+      background: #000000;
+      overflow: hidden;
+    }
+
+    /* Video iframe centrado (16:9 en pantalla 9:16) */
+    .video-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 1920px;  /* Ancho original del video 16:9 */
+      height: 1080px; /* Altura original del video 16:9 */
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out;
+      pointer-events: none;
+    }
+
+    .video-wrapper.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .video-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Badge superior con efecto glow */
+    #location-badge {
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(10px);
+      border: 2px solid #00D9FF;
+      border-radius: 12px;
+      padding: 16px 32px;
+      text-align: center;
+      z-index: 10;
+      box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    #location-badge.visible {
+      opacity: 1;
+    }
+
+    #location-badge .line1 {
+      font-size: 20px;
+      font-weight: 500;
+      color: #00D9FF;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    #location-badge .line2 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #00D9FF;
+      margin-top: 4px;
+      text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+    }
+
+    /* Animación de glow para el badge */
+    @keyframes glowPulse {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(0, 217, 255, 0.8), 0 0 40px rgba(0, 217, 255, 0.4);
+      }
+    }
+
+    #location-badge.visible {
+      animation: glowPulse 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="overlay-container">
+    <!-- Badge de ubicación -->
+    <div id="location-badge">
+      <div class="line1">DESDE</div>
+      <div class="line2" id="location-text">YouTube</div>
+    </div>
+
+    <!-- Contenedores de videos (carrusel) -->
+    <div id="video-carousel"></div>
+  </div>
+
+  <!-- YouTube iframe API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <!-- Widget logic -->
+  <script src="../js/youtube-carousel-widget.js"></script>
+
+  <script>
+    // Configuración por defecto
+    const DEFAULT_CONFIG = {
+      isVisible: false,
+      location: 'YouTube',
+      videos: [],
+      currentIndex: 0,
+      duration: 30, // segundos por video
+      autoplay: true
+    };
+
+    let config = { ...DEFAULT_CONFIG };
+    let players = [];
+    let currentPlayer = null;
+    let autoplayTimer = null;
+
+    // Cargar configuración desde localStorage
+    function loadConfig() {
+      try {
+        const saved = localStorage.getItem('youtubeCarouselConfig');
+        if (saved) {
+          config = { ...DEFAULT_CONFIG, ...JSON.parse(saved) };
+        }
+      } catch (err) {
+        console.error('Error loading config:', err);
+      }
+      applyConfig();
+    }
+
+    // Aplicar configuración
+    function applyConfig() {
+      const badge = document.getElementById('location-badge');
+      const locationText = document.getElementById('location-text');
+
+      // Actualizar texto de ubicación
+      locationText.textContent = config.location || 'YouTube';
+
+      // Mostrar/ocultar badge
+      if (config.isVisible) {
+        badge.classList.add('visible');
+      } else {
+        badge.classList.remove('visible');
+      }
+
+      // Actualizar carrusel de videos
+      updateCarousel();
+    }
+
+    // Extraer video ID de URL de YouTube
+    function extractVideoId(url) {
+      const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
+        /youtube\.com\/embed\/([^&\n?#]+)/
+      ];
+
+      for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match) return match[1];
+      }
+      return null;
+    }
+
+    // Actualizar carrusel de videos
+    function updateCarousel() {
+      const carousel = document.getElementById('video-carousel');
+      carousel.innerHTML = '';
+
+      if (!config.videos || config.videos.length === 0) {
+        return;
+      }
+
+      // Crear wrappers para cada video
+      config.videos.forEach((videoUrl, index) => {
+        const videoId = extractVideoId(videoUrl);
+        if (!videoId) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'video-wrapper';
+        wrapper.id = `video-wrapper-${index}`;
+
+        const iframe = document.createElement('div');
+        iframe.id = `player-${index}`;
+
+        wrapper.appendChild(iframe);
+        carousel.appendChild(wrapper);
+      });
+
+      // Inicializar players cuando la API esté lista
+      if (window.YT && window.YT.Player) {
+        initPlayers();
+      }
+    }
+
+    // Inicializar YouTube players
+    function initPlayers() {
+      players = [];
+
+      config.videos.forEach((videoUrl, index) => {
+        const videoId = extractVideoId(videoUrl);
+        if (!videoId) return;
+
+        const player = new YT.Player(`player-${index}`, {
+          videoId: videoId,
+          playerVars: {
+            autoplay: 0,
+            controls: 0,
+            modestbranding: 1,
+            rel: 0,
+            showinfo: 0,
+            fs: 0,
+            playsinline: 1,
+            mute: 1
+          },
+          events: {
+            onReady: (event) => {
+              players[index] = event.target;
+              if (index === config.currentIndex && config.isVisible) {
+                showVideo(index);
+              }
+            },
+            onStateChange: (event) => {
+              if (event.data === YT.PlayerState.ENDED && config.autoplay) {
+                nextVideo();
+              }
+            }
+          }
+        });
+      });
+    }
+
+    // Mostrar video específico
+    function showVideo(index) {
+      if (index < 0 || index >= config.videos.length) return;
+
+      // Ocultar todos los videos
+      document.querySelectorAll('.video-wrapper').forEach(wrapper => {
+        wrapper.classList.remove('active');
+      });
+
+      // Pausar todos los players
+      players.forEach(player => {
+        if (player && player.pauseVideo) {
+          player.pauseVideo();
+        }
+      });
+
+      // Mostrar y reproducir el video actual
+      const wrapper = document.getElementById(`video-wrapper-${index}`);
+      if (wrapper) {
+        wrapper.classList.add('active');
+      }
+
+      if (players[index] && players[index].playVideo) {
+        players[index].playVideo();
+        currentPlayer = players[index];
+      }
+
+      config.currentIndex = index;
+
+      // Configurar timer para autoplay
+      if (config.autoplay) {
+        clearTimeout(autoplayTimer);
+        autoplayTimer = setTimeout(() => {
+          nextVideo();
+        }, config.duration * 1000);
+      }
+    }
+
+    // Siguiente video
+    function nextVideo() {
+      const nextIndex = (config.currentIndex + 1) % config.videos.length;
+      showVideo(nextIndex);
+    }
+
+    // Anterior video
+    function previousVideo() {
+      const prevIndex = (config.currentIndex - 1 + config.videos.length) % config.videos.length;
+      showVideo(prevIndex);
+    }
+
+    // Callback cuando YouTube API esté lista
+    function onYouTubeIframeAPIReady() {
+      initPlayers();
+    }
+
+    // Escuchar cambios en localStorage
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'youtubeCarouselConfig') {
+        loadConfig();
+      }
+    });
+
+    // Polling para sincronización (OBS compatibility)
+    setInterval(() => {
+      const saved = localStorage.getItem('youtubeCarouselConfig');
+      if (saved) {
+        const newConfig = JSON.parse(saved);
+        if (JSON.stringify(newConfig) !== JSON.stringify(config)) {
+          config = { ...DEFAULT_CONFIG, ...newConfig };
+          applyConfig();
+        }
+      }
+    }, 1000);
+
+    // Cargar configuración inicial
+    loadConfig();
+  </script>
+
+</body>
+</html>
