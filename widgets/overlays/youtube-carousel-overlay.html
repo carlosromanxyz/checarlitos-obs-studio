@@ -66,20 +66,21 @@
       border: none;
     }
 
-    /* Badge de ubicación */
+    /* Badge de ubicación - Glassmorphism */
     .location-indicator {
       position: fixed;
       top: 80px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(10px);
-      border: 2px solid #00D9FF;
-      border-radius: 12px;
-      padding: 16px 32px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 20px 40px;
       text-align: center;
       z-index: 40;
-      box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       transition: opacity 0.5s ease-in-out;
     }
 
@@ -89,34 +90,22 @@
 
     .location-indicator .line1 {
       font-family: 'Poppins', sans-serif;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 500;
-      color: #00D9FF;
-      letter-spacing: 3px;
+      color: rgba(255, 255, 255, 0.9);
+      letter-spacing: 4px;
       text-transform: uppercase;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
     }
 
     .location-indicator .line2 {
       font-family: 'Poppins', sans-serif;
-      font-size: 32px;
+      font-size: 36px;
       font-weight: 700;
-      color: #00D9FF;
-      margin-top: 4px;
-      text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
-    }
-
-    /* Animación de glow */
-    @keyframes glowPulse {
-      0%, 100% {
-        box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
-      }
-      50% {
-        box-shadow: 0 0 30px rgba(0, 217, 255, 0.8), 0 0 40px rgba(0, 217, 255, 0.4);
-      }
-    }
-
-    .location-indicator {
-      animation: glowPulse 3s ease-in-out infinite;
+      color: #ffffff;
+      margin-top: 6px;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+      letter-spacing: 1px;
     }
   </style>
 
