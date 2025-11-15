@@ -56,68 +56,46 @@
       <div id="youtube-carousel-content" class="bg-zinc-800/50 border-t border-zinc-700 hidden">
         <div class="p-3 space-y-3">
 
-          <!-- Agregar video -->
-          <div>
-            <label class="block text-xs text-zinc-400 mb-1">Agregar video</label>
-            <div class="flex gap-2 mb-2">
-              <input
-                type="text"
-                id="youtube-video-id-input"
-                placeholder="ID del video (ej: dQw4w9WgXcQ)"
-                maxlength="11"
-                class="flex-1 bg-zinc-900 border border-zinc-600 text-white px-3 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave font-mono"
-              >
-              <button
-                onclick="youtubeAddVideo()"
-                class="bg-radio-wave hover:bg-radio-wave/80 text-zinc-900 px-4 py-2 rounded text-sm font-medium"
-              >
-                Agregar
-              </button>
-            </div>
-            <input
-              type="text"
-              id="youtube-location-input"
-              placeholder="Ubicación (opcional, ej: SANTIAGO)"
-              maxlength="20"
-              class="w-full bg-zinc-900 border border-zinc-600 text-white px-3 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
-            >
-          </div>
-
-          <!-- Lista de videos -->
-          <div>
-            <label class="block text-xs text-zinc-400 mb-1">Videos (<span id="youtube-video-count">0</span>)</label>
-            <div id="youtube-video-list" class="max-h-64 overflow-y-auto space-y-1">
-              <!-- Videos dinámicos -->
-            </div>
-          </div>
-
           <!-- Intervalo de rotación -->
-          <div>
-            <label class="block text-xs text-zinc-400 mb-1">Intervalo de rotación (segundos)</label>
-            <input
-              type="number"
-              id="youtube-interval-input"
-              min="5"
-              max="300"
-              value="30"
-              class="w-full bg-zinc-900 border border-zinc-600 text-white px-3 py-2 rounded text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
-              onchange="youtubeUpdateInterval(this.value)"
-            >
-          </div>
+          <label class="block">
+            <span class="text-sm text-zinc-300 font-medium">Intervalo de rotación</span>
+            <div class="flex items-center gap-2 mt-1">
+              <input
+                type="number"
+                id="youtube-interval-input"
+                min="5"
+                max="60"
+                value="10"
+                onchange="youtubeUpdateInterval(this.value)"
+                class="flex-1 px-3 py-2 bg-zinc-700 border border-zinc-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
+              >
+              <span class="text-xs text-zinc-400 whitespace-nowrap">segundos</span>
+            </div>
+          </label>
 
-          <!-- Navegación -->
-          <div class="flex gap-2">
+          <!-- Videos -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-zinc-300 font-medium">Videos (<span id="youtube-video-count">0</span>)</span>
+            </div>
+
+            <!-- Lista de videos -->
+            <div id="youtube-video-list" class="space-y-2 max-h-64 overflow-y-auto">
+              <div class="text-xs text-zinc-400 text-center py-4">
+                No hay videos configurados.<br>
+                Haz clic en "Agregar Video" para comenzar.
+              </div>
+            </div>
+
+            <!-- Botón agregar video -->
             <button
-              onclick="youtubePreviousVideo()"
-              class="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-2 rounded text-sm"
+              onclick="youtubeAddVideo()"
+              class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-radio-wave hover:bg-radio-wave/80 text-zinc-900 font-medium rounded transition-colors text-sm"
             >
-              ← Anterior
-            </button>
-            <button
-              onclick="youtubeNextVideo()"
-              class="flex-1 bg-zinc-700 hover:bg-zinc-600 text-white px-3 py-2 rounded text-sm"
-            >
-              Siguiente →
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              <span>Agregar Video</span>
             </button>
           </div>
 
@@ -169,14 +147,18 @@
       const videoList = document.getElementById('youtube-video-list');
 
       if (!youtubeConfig.videos || youtubeConfig.videos.length === 0) {
-        videoList.innerHTML = '<p class="text-xs text-zinc-500 text-center py-4">No hay videos agregados</p>';
+        videoList.innerHTML = `
+          <div class="text-xs text-zinc-400 text-center py-4">
+            No hay videos configurados.<br>
+            Haz clic en "Agregar Video" para comenzar.
+          </div>
+        `;
         return;
       }
 
       videoList.innerHTML = youtubeConfig.videos.map((video, index) => {
-        const isActive = index === youtubeConfig.currentIndex;
         return `
-          <div class="flex items-center gap-2 bg-zinc-900 border ${isActive ? 'border-radio-wave' : 'border-zinc-700'} rounded p-2">
+          <div class="flex items-center gap-2 p-2 bg-zinc-700/50 rounded hover:bg-zinc-700 transition-colors">
             <input
               type="checkbox"
               ${video.isEnabled !== false ? 'checked' : ''}
@@ -187,13 +169,14 @@
               <div class="text-sm text-white truncate">${video.location || 'Sin ubicación'}</div>
               <div class="text-xs text-zinc-400 truncate font-mono">${video.videoId}</div>
             </div>
-            ${isActive ? '<i class="fa-solid fa-play text-radio-wave text-xs"></i>' : ''}
             <button
               onclick="youtubeRemoveVideo(${index})"
-              class="text-red-400 hover:text-red-300 px-2 py-1"
+              class="text-red-400 hover:text-red-300 transition-colors"
               title="Eliminar video"
             >
-              <i class="fa-solid fa-trash text-xs"></i>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
             </button>
           </div>
         `;
@@ -206,25 +189,18 @@
     }
 
     function youtubeAddVideo() {
-      const videoIdInput = document.getElementById('youtube-video-id-input');
-      const locationInput = document.getElementById('youtube-location-input');
+      const videoId = prompt('ID del video de YouTube:\n(Ejemplo: dQw4w9WgXcQ de https://youtube.com/watch?v=dQw4w9WgXcQ)');
 
-      const videoId = videoIdInput.value.trim();
-      const location = locationInput.value.trim();
-
-      if (!videoId) {
-        alert('Por favor ingresa un ID de video');
-        return;
-      }
+      if (!videoId) return;
 
       if (!YoutubeCarouselWidget.isValidVideoId(videoId)) {
-        alert('El ID del video no parece válido. Debe tener 11 caracteres.\nEjemplo: dQw4w9WgXcQ de https://youtube.com/watch?v=dQw4w9WgXcQ');
+        alert('El ID del video no parece válido. Debe tener 11 caracteres.');
         return;
       }
 
-      YoutubeCarouselWidget.addVideo(videoId, location);
-      videoIdInput.value = '';
-      locationInput.value = '';
+      const location = prompt('Ubicación (opcional):\n(Ejemplo: SANTIAGO, CHILE)');
+
+      YoutubeCarouselWidget.addVideo(videoId.trim(), location ? location.trim() : '');
       youtubeLoadConfig();
     }
 
@@ -242,21 +218,6 @@
 
     function youtubeUpdateInterval(value) {
       YoutubeCarouselWidget.setInterval(parseInt(value));
-      youtubeLoadConfig();
-    }
-
-    function youtubeNextVideo() {
-      YoutubeCarouselWidget.nextVideo();
-      youtubeLoadConfig();
-    }
-
-    function youtubePreviousVideo() {
-      YoutubeCarouselWidget.previousVideo();
-      youtubeLoadConfig();
-    }
-
-    function youtubeGoToVideo(index) {
-      YoutubeCarouselWidget.goToVideo(index);
       youtubeLoadConfig();
     }
 
