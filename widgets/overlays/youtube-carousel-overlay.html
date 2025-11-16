@@ -206,8 +206,6 @@
   <!-- YouTube Carousel -->
   <div id="youtube-carousel" class="hidden"></div>
 
-  <script src="../js/youtube-carousel-widget.js"></script>
-
   <script>
     // Default configs
     const DEFAULT_CONFIG = {
@@ -223,11 +221,19 @@
     let intervalId = null
     let previousConfig = null
 
-    // Load config from localStorage
-    function loadConfig() {
-      const saved = localStorage.getItem('youtubeCarouselConfig')
-      if (saved) {
-        return JSON.parse(saved)
+    // Load config from JSON file
+    async function loadConfig() {
+      try {
+        const response = await fetch('/config/youtube-carousel.json?t=' + Date.now())
+        if (response.ok) {
+          const config = await response.json()
+          console.log('📺 YouTube Carousel: Config loaded from JSON')
+          return config
+        } else {
+          console.error('📺 YouTube Carousel: Failed to load config, using default', response.status, response.statusText)
+        }
+      } catch (err) {
+        console.error('📺 YouTube Carousel: Error loading config', err)
       }
       return DEFAULT_CONFIG
     }
@@ -280,8 +286,8 @@
     }
 
     // Next slide
-    function nextSlide() {
-      const config = loadConfig()
+    async function nextSlide() {
+      const config = await loadConfig()
       const enabledVideos = config.videos.filter(v => v.isEnabled !== false)
 
       if (slides.length === 0 || enabledVideos.length === 0) return
@@ -410,8 +416,8 @@
     }
 
     // Apply config
-    function applyConfig() {
-      const config = loadConfig()
+    async function applyConfig() {
+      const config = await loadConfig()
 
       // Detect if this is an actual state change
       const isStateChange = detectStateChange(previousConfig, config)
@@ -460,17 +466,10 @@
       applyConfig()
     })
 
-    // Listen for storage events (cross-tab sync)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'youtubeCarouselConfig') {
-        applyConfig()
-      }
-    })
-
-    // Polling for OBS compatibility (1 second)
+    // Polling to detect JSON file changes (5 seconds)
     setInterval(() => {
       applyConfig()
-    }, 1000)
+    }, 5000)
   </script>
 
 </body>

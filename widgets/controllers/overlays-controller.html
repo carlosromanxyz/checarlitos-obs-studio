@@ -222,78 +222,6 @@
       </div>
     </div>
 
-    <!-- ==================== YOUTUBE CAROUSEL ==================== -->
-    <div class="border border-zinc-700 rounded-lg overflow-hidden">
-      <!-- Header -->
-      <div class="flex items-center gap-3 p-3 bg-zinc-800 hover:bg-zinc-700 transition-colors">
-        <span class="text-sm font-medium flex-1 cursor-pointer" onclick="toggleAccordion('youtube-carousel')">
-          <i class="fa-brands fa-youtube mr-2"></i>
-          Carrusel de YouTube
-        </span>
-
-        <!-- Toggle Switch -->
-        <label class="relative cursor-pointer">
-          <input type="checkbox" id="youtube-visible-toggle" class="sr-only peer" onchange="youtubeToggleVisibility(this.checked)">
-          <div class="w-11 h-6 bg-zinc-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-radio-wave rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-radio-wave"></div>
-        </label>
-
-        <!-- Chevron -->
-        <svg id="youtube-carousel-chevron" class="w-5 h-5 text-zinc-400 transition-transform duration-200 cursor-pointer" onclick="toggleAccordion('youtube-carousel')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-      </div>
-
-      <!-- Content -->
-      <div id="youtube-carousel-content" class="bg-zinc-800/50 border-t border-zinc-700 hidden">
-        <div class="p-3 space-y-3">
-
-          <!-- Intervalo de rotación -->
-          <label class="block">
-            <span class="text-sm text-zinc-300 font-medium">Intervalo de rotación</span>
-            <div class="flex items-center gap-2 mt-1">
-              <input
-                type="number"
-                id="youtube-interval-input"
-                min="5"
-                max="60"
-                value="10"
-                onchange="youtubeUpdateInterval(this.value)"
-                class="flex-1 px-3 py-2 bg-zinc-700 border border-zinc-600 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-radio-wave"
-              >
-              <span class="text-xs text-zinc-400 whitespace-nowrap">segundos</span>
-            </div>
-          </label>
-
-          <!-- Videos -->
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-zinc-300 font-medium">Videos (<span id="youtube-video-count">0</span>)</span>
-            </div>
-
-            <!-- Lista de videos -->
-            <div id="youtube-video-list" class="space-y-2 max-h-64 overflow-y-auto">
-              <div class="text-xs text-zinc-400 text-center py-4">
-                No hay videos configurados.<br>
-                Haz clic en "Agregar Video" para comenzar.
-              </div>
-            </div>
-
-            <!-- Botón agregar video -->
-            <button
-              onclick="youtubeAddVideo()"
-              class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-radio-wave hover:bg-radio-wave/80 text-zinc-900 font-medium rounded transition-colors text-sm"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-              </svg>
-              <span>Agregar Video</span>
-            </button>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
   </div>
 
   <!-- Font Awesome -->
@@ -306,7 +234,6 @@
   <script src="../js/tiktok-widget.js"></script>
   <script src="../js/logo-widget.js"></script>
   <script src="../js/quotes-widget.js"></script>
-  <script src="../js/youtube-carousel-widget.js"></script>
 
   <script>
     // ==================== SOCKET.IO CONNECTION ====================
@@ -533,106 +460,6 @@
       quotesLoadConfig();
     }
 
-    // ==================== YOUTUBE CAROUSEL LOGIC ====================
-    let youtubeConfig = {};
-
-    function youtubeLoadConfig() {
-      youtubeConfig = YoutubeCarouselWidget.load();
-      youtubeUpdateUI();
-    }
-
-    function youtubeUpdateUI() {
-      // Toggle principal
-      document.getElementById('youtube-visible-toggle').checked = youtubeConfig.isVisible;
-
-      // Interval
-      document.getElementById('youtube-interval-input').value = youtubeConfig.intervalSeconds || 30;
-
-      // Video count
-      document.getElementById('youtube-video-count').textContent = youtubeConfig.videos?.length || 0;
-
-      // Video list
-      youtubeRenderVideoList();
-    }
-
-    function youtubeRenderVideoList() {
-      const videoList = document.getElementById('youtube-video-list');
-
-      if (!youtubeConfig.videos || youtubeConfig.videos.length === 0) {
-        videoList.innerHTML = `
-          <div class="text-xs text-zinc-400 text-center py-4">
-            No hay videos configurados.<br>
-            Haz clic en "Agregar Video" para comenzar.
-          </div>
-        `;
-        return;
-      }
-
-      videoList.innerHTML = youtubeConfig.videos.map((video, index) => {
-        return `
-          <div class="flex items-center gap-2 p-2 bg-zinc-700/50 rounded hover:bg-zinc-700 transition-colors">
-            <input
-              type="checkbox"
-              ${video.isEnabled !== false ? 'checked' : ''}
-              onchange="youtubeToggleVideo(${index}, this.checked)"
-              class="w-4 h-4 text-radio-wave bg-zinc-600 border-zinc-500 rounded focus:ring-radio-wave focus:ring-2"
-            >
-            <div class="flex-1 min-w-0">
-              <div class="text-sm text-white truncate">${video.location || 'Sin ubicación'}</div>
-              <div class="text-xs text-zinc-400 truncate font-mono">${video.videoId}</div>
-            </div>
-            <button
-              onclick="youtubeRemoveVideo(${index})"
-              class="text-red-400 hover:text-red-300 transition-colors"
-              title="Eliminar video"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-              </svg>
-            </button>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function youtubeToggleVisibility(checked) {
-      YoutubeCarouselWidget.update({ isVisible: checked });
-      youtubeLoadConfig();
-    }
-
-    function youtubeAddVideo() {
-      const videoId = prompt('ID del video de YouTube:\n(Ejemplo: dQw4w9WgXcQ de https://youtube.com/watch?v=dQw4w9WgXcQ)');
-
-      if (!videoId) return;
-
-      if (!YoutubeCarouselWidget.isValidVideoId(videoId)) {
-        alert('El ID del video no parece válido. Debe tener 11 caracteres.');
-        return;
-      }
-
-      const location = prompt('Ubicación (opcional):\n(Ejemplo: SANTIAGO, CHILE)');
-
-      YoutubeCarouselWidget.addVideo(videoId.trim(), location ? location.trim() : '');
-      youtubeLoadConfig();
-    }
-
-    function youtubeToggleVideo(index, checked) {
-      YoutubeCarouselWidget.toggleVideo(index, checked);
-      youtubeLoadConfig();
-    }
-
-    function youtubeRemoveVideo(index) {
-      if (confirm('¿Eliminar este video?')) {
-        YoutubeCarouselWidget.removeVideo(index);
-        youtubeLoadConfig();
-      }
-    }
-
-    function youtubeUpdateInterval(value) {
-      YoutubeCarouselWidget.setInterval(parseInt(value));
-      youtubeLoadConfig();
-    }
-
     // ==================== INITIALIZATION ====================
 
     // Polling para sincronización (OBS compatibility)
@@ -650,20 +477,12 @@
         quotesConfig = newQuotesConfig;
         quotesUpdateUI();
       }
-
-      // YouTube Carousel polling
-      const newConfig = YoutubeCarouselWidget.load();
-      if (JSON.stringify(newConfig) !== JSON.stringify(youtubeConfig)) {
-        youtubeConfig = newConfig;
-        youtubeUpdateUI();
-      }
     }, 1000);
 
     // Inicializar
     tiktokLoadConfig();
     logoLoadConfig();
     quotesLoadConfig();
-    youtubeLoadConfig();
   </script>
 
 </body>

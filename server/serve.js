@@ -45,8 +45,9 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Construir ruta del archivo
-  let filePath = path.join(__dirname, '..', req.url === '/' ? 'index.html' : req.url);
+  // Construir ruta del archivo (eliminar query params)
+  const urlWithoutQuery = req.url.split('?')[0];
+  let filePath = path.join(__dirname, '..', urlWithoutQuery === '/' ? 'index.html' : urlWithoutQuery);
 
   // Prevenir directory traversal attacks
   const normalizedPath = path.normalize(filePath);

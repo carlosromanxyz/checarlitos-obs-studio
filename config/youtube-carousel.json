@@ -1,0 +1,21 @@
+{
+  "isVisible": true,
+  "intervalSeconds": 10,
+  "videos": [
+    {
+      "videoId": "eUT8C43W6yk",
+      "location": "El Quisco",
+      "isEnabled": true
+    },
+    {
+      "videoId": "5jPpMkg5daM",
+      "location": "Valparaiso",
+      "isEnabled": true
+    },
+    {
+      "videoId": "79PtdSvv1Xc",
+      "location": "San Antonio",
+      "isEnabled": true
+    }
+  ]
+}
