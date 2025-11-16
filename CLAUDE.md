@@ -130,12 +130,13 @@ checarlitos-obs-studio/
 ├── server/
 │   └── serve.js           # Node.js server (static + Socket.io + TikTok)
 ├── config/                # JSON configuration files for overlays
-│   └── youtube-carousel.json  # YouTube carousel config
+│   ├── youtube-carousel.json  # YouTube carousel config
+│   └── logo.json          # Logo overlay config
 ├── widgets/
 │   ├── overlays/          # OBS Browser Source overlays
-│   ├── controllers/       # Management dashboard (TikTok, Logo, Quotes)
+│   ├── controllers/       # Management dashboard (TikTok, Quotes)
 │   ├── testing/           # Development testing tools
-│   └── js/                # Shared JavaScript (logo, quotes)
+│   └── js/                # Shared JavaScript (quotes)
 ├── assets/
 │   └── images/            # Static images
 ├── docs/                  # Documentation
@@ -198,14 +199,14 @@ socket.emit('test:topliker', { top3: [{username: 'user1', nickname: 'User 1', li
 - TikTok connection state (`tiktokConnection`, `currentUsername`)
 
 **Client-Side**:
-- **JSON-based configuration** for overlays (YouTube, etc.) - stored in `config/` directory
-- localStorage for some widget settings (Logo, Quotes - legacy support)
+- **JSON-based configuration** for overlays (YouTube, Logo) - stored in `config/` directory
+- localStorage for some widget settings (Quotes - legacy support)
 - No global state management library
 - Event-driven architecture via Socket.io
 
-### YouTube Carousel Configuration
+### JSON-Based Overlay Configuration
 
-The YouTube carousel uses a **JSON file-based configuration system**:
+#### YouTube Carousel
 
 **Location**: `config/youtube-carousel.json`
 
@@ -224,8 +225,32 @@ The YouTube carousel uses a **JSON file-based configuration system**:
 }
 ```
 
-**How it works**:
-1. Edit `config/youtube-carousel.json` directly in your text editor
+**Properties**:
+- `isVisible`: Show/hide the entire overlay
+- `intervalSeconds`: Time between video transitions (5-60 seconds)
+- `videoId`: YouTube video ID (11 characters)
+- `location`: Text shown in "DESDE" badge
+- `isEnabled`: Skip video if false
+
+#### Logo
+
+**Location**: `config/logo.json`
+
+**Structure**:
+```json
+{
+  "isVisible": true,
+  "showText": false
+}
+```
+
+**Properties**:
+- `isVisible`: Show/hide the logo overlay
+- `showText`: Show/hide "El Rincón del Che Carlitos" text
+
+### How JSON Configuration Works
+
+1. Edit JSON file directly in your text editor
 2. Save the file
 3. Overlay fetches the JSON every 5 seconds via HTTP
 4. Updates automatically when changes are detected
@@ -272,46 +297,55 @@ Changes apply immediately (CDN Tailwind reads config inline in each HTML file).
 - **Testing**: Use controller's test buttons or simulator before going live
 - **Top 3 ranking**: Only updates when actual ranking positions/counts change (prevents spam)
 
-### YouTube Carousel Workflow
+### Managing JSON-Based Overlays
 
-To manage YouTube videos in the carousel:
+#### YouTube Carousel
 
-1. **Edit configuration**:
-   ```bash
-   # Open the JSON file in your editor
-   code config/youtube-carousel.json
+```bash
+# Edit YouTube configuration
+code config/youtube-carousel.json
+```
 
-   # Or use any text editor
-   nano config/youtube-carousel.json
-   ```
+Example configuration:
+```json
+{
+  "isVisible": true,
+  "intervalSeconds": 30,
+  "videos": [
+    {
+      "videoId": "dQw4w9WgXcQ",
+      "location": "CANCÚN",
+      "isEnabled": true
+    },
+    {
+      "videoId": "jNQXAC9IVRw",
+      "location": "PLAYA DEL CARMEN",
+      "isEnabled": true
+    }
+  ]
+}
+```
 
-2. **Add a video**:
-   ```json
-   {
-     "isVisible": true,
-     "intervalSeconds": 30,
-     "videos": [
-       {
-         "videoId": "dQw4w9WgXcQ",
-         "location": "CANCÚN",
-         "isEnabled": true
-       },
-       {
-         "videoId": "jNQXAC9IVRw",
-         "location": "PLAYA DEL CARMEN",
-         "isEnabled": true
-       }
-     ]
-   }
-   ```
+Save the file - changes apply automatically within 5 seconds.
 
-3. **Save the file** - Changes apply automatically within 5 seconds
+#### Logo
 
-4. **Properties**:
-   - `isVisible`: Show/hide the entire overlay
-   - `intervalSeconds`: Time between video transitions (5-60 seconds recommended)
-   - `videoId`: YouTube video ID (11 characters from URL)
-   - `location`: Text shown in "DESDE" badge
-   - `isEnabled`: Skip video if false
+```bash
+# Edit logo configuration
+code config/logo.json
+```
 
-**No controller needed** - the overlay reads directly from JSON file via HTTP fetch
+Example configuration:
+```json
+{
+  "isVisible": true,
+  "showText": true
+}
+```
+
+**Common use cases**:
+- `{"isVisible": true, "showText": false}` - Logo only (just the microphone icon)
+- `{"isVisible": true, "showText": true}` - Logo with text
+- `{"isVisible": false, "showText": false}` - Hidden
+
+**No controller needed** - all overlays read directly from JSON files via HTTP fetch

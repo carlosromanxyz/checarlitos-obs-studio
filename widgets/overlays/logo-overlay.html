@@ -207,11 +207,19 @@
       showText: false
     }
 
-    // Load config from localStorage
-    function loadConfig() {
-      const saved = localStorage.getItem('obs-logo-config')
-      if (saved) {
-        return JSON.parse(saved)
+    // Load config from JSON file
+    async function loadConfig() {
+      try {
+        const response = await fetch('/config/logo.json?t=' + Date.now())
+        if (response.ok) {
+          const config = await response.json()
+          console.log('🎨 Logo: Config loaded from JSON')
+          return config
+        } else {
+          console.error('🎨 Logo: Failed to load config, using default', response.status, response.statusText)
+        }
+      } catch (err) {
+        console.error('🎨 Logo: Error loading config', err)
       }
       return DEFAULT_CONFIG
     }
@@ -346,7 +354,8 @@
     }
 
     // Apply config to overlay
-    function applyConfig(config) {
+    async function applyConfig() {
+      const config = await loadConfig()
       // Detect if this is an actual state change
       const isStateChange = detectStateChange(previousConfig, config)
 
@@ -383,24 +392,14 @@
       console.log('📺 Logo overlay updated:', config, 'wasHidden:', wasHidden)
     }
 
-    // Listen for storage changes
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'obs-logo-config') {
-        const config = loadConfig()
-        applyConfig(config)
-      }
-    })
-
-    // Polling fallback (OBS compatibility)
+    // Polling to detect JSON file changes (5 seconds)
     setInterval(() => {
-      const config = loadConfig()
-      applyConfig(config)
-    }, 1000)
+      applyConfig()
+    }, 5000)
 
     // Apply initial config
     window.addEventListener('DOMContentLoaded', () => {
-      const config = loadConfig()
-      applyConfig(config)
+      applyConfig()
     })
   </script>
 
