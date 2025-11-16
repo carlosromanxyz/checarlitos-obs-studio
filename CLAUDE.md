@@ -131,12 +131,13 @@ checarlitos-obs-studio/
 │   └── serve.js           # Node.js server (static + Socket.io + TikTok)
 ├── config/                # JSON configuration files for overlays
 │   ├── youtube-carousel.json  # YouTube carousel config
-│   └── logo.json          # Logo overlay config
+│   ├── logo.json          # Logo overlay config
+│   └── quotes.json        # Quotes overlay config
 ├── widgets/
 │   ├── overlays/          # OBS Browser Source overlays
-│   ├── controllers/       # Management dashboard (TikTok, Quotes)
+│   ├── controllers/       # Management dashboard (TikTok only)
 │   ├── testing/           # Development testing tools
-│   └── js/                # Shared JavaScript (quotes)
+│   └── js/                # Shared JavaScript (tiktok-widget)
 ├── assets/
 │   └── images/            # Static images
 ├── docs/                  # Documentation
@@ -199,8 +200,8 @@ socket.emit('test:topliker', { top3: [{username: 'user1', nickname: 'User 1', li
 - TikTok connection state (`tiktokConnection`, `currentUsername`)
 
 **Client-Side**:
-- **JSON-based configuration** for overlays (YouTube, Logo) - stored in `config/` directory
-- localStorage for some widget settings (Quotes - legacy support)
+- **JSON-based configuration** for all overlays (YouTube, Logo, Quotes) - stored in `config/` directory
+- No localStorage dependencies
 - No global state management library
 - Event-driven architecture via Socket.io
 
@@ -247,6 +248,33 @@ socket.emit('test:topliker', { top3: [{username: 'user1', nickname: 'User 1', li
 **Properties**:
 - `isVisible`: Show/hide the logo overlay
 - `showText`: Show/hide "El Rincón del Che Carlitos" text
+
+#### Quotes (Frases Motivacionales)
+
+**Location**: `config/quotes.json`
+
+**Structure**:
+```json
+{
+  "isVisible": false,
+  "intervalSeconds": 20,
+  "quotes": [
+    {
+      "text": "La única forma de hacer un gran trabajo es amar lo que haces.",
+      "author": "Steve Jobs"
+    },
+    {
+      "text": "El éxito es la suma de pequeños esfuerzos repetidos día tras día.",
+      "author": "Robert Collier"
+    }
+  ]
+}
+```
+
+**Properties**:
+- `isVisible`: Show/hide the quotes overlay
+- `intervalSeconds`: Time between quote rotations (10-60 seconds)
+- `quotes`: Array of quote objects with `text` and `author` fields
 
 ### How JSON Configuration Works
 
@@ -347,5 +375,36 @@ Example configuration:
 - `{"isVisible": true, "showText": false}` - Logo only (just the microphone icon)
 - `{"isVisible": true, "showText": true}` - Logo with text
 - `{"isVisible": false, "showText": false}` - Hidden
+
+#### Quotes (Frases Motivacionales)
+
+```bash
+# Edit quotes configuration
+code config/quotes.json
+```
+
+Example configuration:
+```json
+{
+  "isVisible": true,
+  "intervalSeconds": 20,
+  "quotes": [
+    {
+      "text": "La única forma de hacer un gran trabajo es amar lo que haces.",
+      "author": "Steve Jobs"
+    },
+    {
+      "text": "Tu frase personalizada aquí.",
+      "author": "Tu Nombre"
+    }
+  ]
+}
+```
+
+**Default quotes**: The JSON file comes with 30 Spanish motivational quotes. You can:
+- Add your own quotes
+- Remove quotes you don't like
+- Change existing quotes
+- Modify authors
 
 **No controller needed** - all overlays read directly from JSON files via HTTP fetch

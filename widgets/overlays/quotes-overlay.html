@@ -31,6 +31,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
+
   <style>
     * {
       margin: 0;
@@ -154,8 +155,6 @@
     </div>
   </div>
 
-  <script src="../js/quotes-widget.js"></script>
-
   <script>
     // State
     let currentQuoteIndex = 0
@@ -166,14 +165,22 @@
     const DEFAULT_CONFIG = {
       isVisible: false,
       intervalSeconds: 20,
-      useLocalBank: true
+      quotes: []
     }
 
-    // Load config from localStorage
-    function loadConfig() {
-      const saved = localStorage.getItem('quotesConfig')
-      if (saved) {
-        return JSON.parse(saved)
+    // Load config from JSON file
+    async function loadConfig() {
+      try {
+        const response = await fetch('/config/quotes.json?t=' + Date.now())
+        if (response.ok) {
+          const config = await response.json()
+          console.log('💬 Quotes: Config loaded from JSON')
+          return config
+        } else {
+          console.error('💬 Quotes: Failed to load config, using default', response.status, response.statusText)
+        }
+      } catch (err) {
+        console.error('💬 Quotes: Error loading config', err)
       }
       return DEFAULT_CONFIG
     }
@@ -244,8 +251,9 @@
     }
 
     // Next quote
-    function nextQuote() {
-      const quotes = QuotesWidget.getQuotes()
+    async function nextQuote() {
+      const config = await loadConfig()
+      const quotes = config.quotes || []
 
       if (quotes.length === 0) {
         console.log('💬 No quotes available')
@@ -297,8 +305,8 @@
     }
 
     // Apply config
-    function applyConfig() {
-      const config = loadConfig()
+    async function applyConfig() {
+      const config = await loadConfig()
 
       // Detect if this is an actual state change
       const isStateChange = detectStateChange(previousConfig, config)
@@ -320,7 +328,7 @@
         // Play entrance animation if transitioning from hidden to visible
         if (wasHidden) {
           // Set initial quote
-          const quotes = QuotesWidget.getQuotes()
+          const quotes = config.quotes || []
           if (quotes.length > 0) {
             const quote = quotes[0]
             document.getElementById('quote-text').textContent = quote.text
@@ -347,17 +355,10 @@
       applyConfig()
     })
 
-    // Listen for storage events (cross-tab sync)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'quotesConfig') {
-        applyConfig()
-      }
-    })
-
-    // Polling for OBS compatibility (1 second)
+    // Polling to detect JSON file changes (5 seconds)
     setInterval(() => {
       applyConfig()
-    }, 1000)
+    }, 5000)
   </script>
 
 </body>
